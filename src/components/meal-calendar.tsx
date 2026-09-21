@@ -163,73 +163,138 @@ export function MealCalendar({
           {rows.length === 0 && (
             <p>Add a meal to configure its daily coverage.</p>
           )}
-          <div className="table-scroll">
-            <table>
-              <thead>
-                <tr>
-                  <th>Day / date</th>
-                  <th>Meal</th>
-                  <th>Resident coverage</th>
-                  <th>Guest / person (₹)</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((r, i) => (
-                  <tr key={`${r.service_date}-${r.meal}`}>
-                    <td>
-                      {
-                        days.find((d) => d.service_date === r.service_date)
-                          ?.label
-                      }
-                      <small>{r.service_date}</small>
-                    </td>
-                    <td>{r.meal}</td>
-                    <td>
-                      <select
-                        aria-label={`${r.service_date} ${r.meal} coverage`}
-                        value={r.coverage}
-                        onChange={(e) =>
-                          setRows(
-                            rows.map((v, j) =>
-                              j === i
-                                ? {
-                                    ...v,
-                                    coverage: e.target
-                                      .value as MealService["coverage"],
-                                  }
-                                : v,
-                            ),
-                          )
-                        }
-                      >
-                        <option value="not_served">Not served</option>
-                        <option value="fixed">Fixed flat contribution</option>
-                        <option value="package">Per-person meal package</option>
-                      </select>
-                    </td>
-                    <td>
-                      <input
-                        aria-label={`${r.service_date} ${r.meal} guest price`}
-                        type="number"
-                        min="0"
-                        max="1000000"
-                        step="0.01"
-                        disabled={r.coverage === "not_served"}
-                        value={r.guest}
-                        onChange={(e) =>
-                          setRows(
-                            rows.map((v, j) =>
-                              j === i ? { ...v, guest: e.target.value } : v,
-                            ),
-                          )
-                        }
-                      />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          {[...new Set(rows.map((r) => r.meal))].map((meal) => (
+            <section className="meal-coverage-card" key={meal}>
+              <h3>{meal}</h3>
+              <p className="small muted">
+                Select days under each coverage. Selecting a day moves it from
+                the other coverage; unselected days are not served.
+              </p>
+              <div className="meal-coverage-options">
+                {(["fixed", "package"] as const).map((coverage) => {
+                  const covered = rows.filter(
+                    (r) => r.meal === meal && r.coverage === coverage,
+                  );
+                  const rates = [...new Set(covered.map((r) => r.guest))];
+                  const price = rates.length === 1 ? rates[0] : "";
+                  return (
+                    <fieldset key={coverage} className="meal-coverage-option">
+                      <legend>
+                        {coverage === "fixed"
+                          ? "Fixed flat contribution"
+                          : "Per-person meal package"}
+                      </legend>
+                      <label>
+                        Guest / person (₹)
+                        <input
+                          aria-label={`${meal} ${coverage} guest price`}
+                          type="number"
+                          min="0"
+                          max="1000000"
+                          step="0.01"
+                          disabled={!covered.length}
+                          value={price}
+                          placeholder={
+                            rates.length > 1
+                              ? "Different prices — enter to replace"
+                              : "Select days first"
+                          }
+                          onChange={(e) =>
+                            setRows(
+                              rows.map((r) =>
+                                r.meal === meal && r.coverage === coverage
+                                  ? { ...r, guest: e.target.value }
+                                  : r,
+                              ),
+                            )
+                          }
+                        />
+                      </label>
+                      {rates.length > 1 && (
+                        <p className="small">
+                          Existing days have different guest prices. Entering a
+                          price applies it to all checked days below.
+                        </p>
+                      )}
+                      <div className="meal-day-checkboxes">
+                        {days.map((day) => {
+                          const row = rows.find(
+                            (r) =>
+                              r.meal === meal &&
+                              r.service_date === day.service_date,
+                          )!;
+                          return (
+                            <label
+                              className="checkbox-row"
+                              key={day.service_date}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={row.coverage === coverage}
+                                aria-label={`${meal} ${coverage} ${day.label} ${day.service_date}`}
+                                onChange={(e) =>
+                                  setRows(
+                                    rows.map((r) =>
+                                      r.meal === meal &&
+                                      r.service_date === day.service_date
+                                        ? {
+                                            ...r,
+                                            coverage: e.target.checked
+                                              ? coverage
+                                              : "not_served",
+                                            guest:
+                                              e.target.checked &&
+                                              rates.length === 1
+                                                ? price
+                                                : r.guest,
+                                          }
+                                        : r,
+                                    ),
+                                  )
+                                }
+                              />
+                              <span>
+                                {day.label}
+                                <small>{day.service_date}</small>
+                              </span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </fieldset>
+                  );
+                })}
+              </div>
+              <details>
+                <summary>Review daily coverage and guest charges</summary>
+                <ul className="meal-coverage-summary">
+                  {rows
+                    .filter((r) => r.meal === meal)
+                    .map((r) => (
+                      <li key={r.service_date}>
+                        <strong>
+                          {
+                            days.find((d) => d.service_date === r.service_date)
+                              ?.label
+                          }
+                        </strong>
+                        <span>
+                          {r.coverage === "fixed"
+                            ? "Fixed flat contribution"
+                            : r.coverage === "package"
+                              ? "Per-person meal package"
+                              : "Not served"}
+                          {r.coverage !== "not_served" &&
+                            (r.guest
+                              ? ` · Guest ₹${r.guest} / person`
+                              : " · Guest price needed")}
+                        </span>
+                      </li>
+                    ))}
+                </ul>
+              </details>
+            </section>
+          ))}
           <div className="entry-actions">
             <button
               className="button"
