@@ -10,10 +10,10 @@ Use one Next.js application with App Router and TypeScript. Supabase supplies Po
 
 ```mermaid
 flowchart LR
-  C[Committee browser] --> N[Next.js on Vercel]
-  N --> A[Supabase Auth]
-  N --> R[Postgres RPC and RLS]
-  N --> S[Private receipt and report storage]
+  C[Committee browser] --> N[Next.js on localhost]
+  N --> A[Supabase Free dev Auth]
+  N --> R[Dev Postgres RPC and RLS]
+  N --> S[Dev private receipt and report storage]
   R --> L[Ledger and operational records]
   L --> V[Report views and snapshots]
   V --> N
@@ -350,49 +350,70 @@ For launch, import flat master and verified opening balances only. Historical Na
 | Double import | Second run has zero new posted business records |
 | Close during a receipt | Deterministic serialized outcome; report includes receipt or posting is rejected |
 | Backup restoration | Restored journal balances and attachment checksums match controls |
+| Dev/prod target isolation | Local/test commands reject prod; dev users/data never appear in prod; release build uses prod URL/key and its independently configured Google callback |
 
 CI must run lint, type checking, meaningful unit tests, local Supabase migration/reset and SQL authorization/ledger tests, production build and core Playwright journeys. Use synthetic fixtures, never real residents in CI. Validate print/export layouts manually at A4 and mobile viewport sizes before launch. No application tests have been run for this documentation-only delivery.
 
 ## 11. Supabase and hosting setup
 
-Recommended topology: Vercel production Next.js application + Supabase production project in an available nearby Indian region, with separate staging. Verify actual region availability and choose server-function proximity when provisioning. Use local Supabase for developer work; never point preview branches or tests at production.
+Current topology: **Next.js on localhost + Supabase Free dev** for real Auth/Google OAuth, RLS, database and private Storage integration. The committee launch will use the separate **Supabase prod** environment. Use a resettable local Supabase stack for destructive resets, migration tests and repeatable synthetic fixtures. App hosting is deliberately undecided until all local end-to-end acceptance tests pass. No Vercel deployment, paid Supabase plan or additional staging environment beyond dev/prod is required now. Do not run destructive tests against prod or unrelated projects in the account.
+
+### Dev/prod separation and release promotion
+
+Treat dev and prod as independently configured Supabase targets, preferably separate projects with distinct URLs/project references, keys, Auth users, database data and Storage buckets. Confirm the owner's actual dev/prod target mapping when connection details are supplied; no paid branching feature is assumed. Two schemas or an `environment` column in one exposed database do not by themselves provide this isolation.
+
+- Local `.env.local` and test tooling use **dev** only. Any future preview deployment also uses dev. Never expose an environment switch to committee users.
+- The release application's environment settings use **prod** only. Next.js public Supabase variables are selected at build time, so changing the target requires a fresh build/deployment with the correct settings; changing a runtime variable alone is insufficient. See [Next.js environment variables](https://nextjs.org/docs/app/guides/environment-variables).
+- Keep the same versioned migrations and database types across both targets. Test migrations in local/dev first, back up prod, apply the reviewed migration set to prod, then release compatible app code. Track each target's migration state.
+- Seed synthetic festivals, receipts and test users only in local/dev. Prod receives approved rates, flats, live festival configuration, verified opening balances and deliberately onboarded Google accounts. Bootstrap the initial admin independently in prod.
+- Configure Google provider, callback allowlists, admission hook and private Storage policies for each target. Authentication sessions and user UUIDs are environment-specific; a dev session or membership does not grant prod access.
+- Deployment/import scripts require an explicit target and verify the expected project reference before making changes. Reset/seed/test commands refuse a prod target. Prod credentials are absent from normal developer test environments.
+- Switching back an app release does not roll back prod database changes. Preserve compatible migrations and backups; never substitute the dev database as a production recovery shortcut.
 
 Configuration contract:
 
 | Setting | Location |
 | --- | --- |
-| `NEXT_PUBLIC_SUPABASE_URL` | Local and hosting environment; project API URL |
-| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Local and hosting environment; public key protected by RLS |
-| `APP_URL` | Server environment; approved base URL for redirects/links |
-| Supabase project reference | Operator/CI deployment configuration |
-| Database deploy credentials or access token | Protected CI secrets, scoped to migration job |
-| Supabase secret key, only if privileged server feature requires it | Server-only secret, separate for staging/production |
-| Google OAuth client ID and secret | Supabase Google provider settings; client secret never in app/public variables |
+| `NEXT_PUBLIC_SUPABASE_URL` | Dev URL in local/preview; prod URL in the launch build |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Matching dev/prod key; public key protected by RLS |
+| `APP_URL` | Local server environment: `http://localhost:3000`; replace with the approved host URL only at deployment |
+| Supabase project reference | Explicit dev/prod references in operator/deployment configuration |
+| Database deploy credentials or access token | Separate protected target credentials; prod restricted to release migrations |
+| Supabase secret key, only if privileged server feature requires it | Server-only key matching the selected environment; never use in the browser |
+| Google OAuth client ID and secret | Each target's Supabase Google provider settings and callback configuration; secret never in app/public variables |
 | Optional invitation-mail provider credentials | Server-only settings if automated invite delivery is enabled |
 
 The frontend domain does not require a paid Supabase custom API domain. Keep the default Supabase project API hostname unless a separate requirement emerges.
 
-Deployment sequence:
+Local implementation and acceptance sequence:
 
-1. Confirm rate/meal policy, hosting budget, chosen domain, Google Cloud access, technical owner and recovery owner.
-2. Scaffold app and local Supabase; implement schema/RLS/RPC migrations and synthetic seed. Run CI from a clean checkout.
-3. Create staging project, apply migrations, configure Google OAuth and private buckets, then deploy a Vercel preview using staging keys. Use separate staging OAuth configuration and synthetic user invitations.
-4. Run the full rehearsal and workbook-import preview. Review exported reports and permissions with the committee.
-5. Create/configure production. Apply reviewed migrations before deploying compatible code. Configure Google provider and the invitation admission hook; disable unused password providers. Create the one-time bootstrap grant for `shivamastha@gmail.com`; do not blanket-disable the OAuth first-login path required by approved invitees.
-6. Initial admin signs in with Google, configures actual blocks/flats, festival days, draft rate version and explicit meal calendar, invites committee Google accounts and verifies opening balances. Activate only after required fields and business checks pass.
-7. Import repository into the approved Vercel account, choose production branch `main`, Node runtime and environment values. Configure preview credentials separately and exclude production secrets from previews.
-8. Add `festival.<existing-domain>` in Vercel. Copy the **exact DNS values Vercel supplies** into the existing DNS provider; do not assume a CNAME target or alter unrelated root/MX records. Verify domain ownership, TLS and redirect behavior. See [Vercel custom domains](https://vercel.com/docs/domains/working-with-domains/add-a-domain).
-9. In Google Cloud, create a Web OAuth client, configure the consent screen/audience and identity scopes, and use the **Supabase provider callback URL** as Google's authorized redirect URI. In Supabase, store the client ID/secret and allow the application's `/auth/callback` redirect, with the correct Site URL. These are two distinct callbacks. Add appropriate development/staging configuration separately. Test invited and uninvited Google login, logout and expired session on the custom domain. Confirm consent-screen production/testing status and authorized test users before onboarding the committee. Use stable staging URLs rather than broad production redirect wildcards.
-10. Verify production read/write permission checks and a synthetic rehearsal in staging; confirm actual opening funds in production, activate access and start live entries.
-11. Tag the launch release, record schema/app versions, verify backup delivery and export a first approved dinner sheet.
+1. Obtain Supabase Free **dev** project details and Google Cloud OAuth access; record the separate prod target for later launch. Hosting budget/domain selection is not a dependency for this phase.
+2. Scaffold Next.js and local Supabase; implement migrations, RLS, transactional functions and synthetic seed data. Run automated checks from a clean checkout against the resettable local database.
+3. Apply reviewed migrations to **dev**, configure its private buckets and invitation admission hook, and disable unused password providers. Keep this test dataset separate from prod.
+4. In Google Cloud, configure a Web OAuth client and identity scopes. Google's authorized redirect URI is the **Supabase provider callback URL**. In Supabase, allow `http://localhost:3000/auth/callback` and set the appropriate local Site URL. Store client ID/secret in the provider configuration. Configure localhost origins where required. These provider and application callbacks are distinct; use exact URLs and approved test accounts.
+5. Set `.env.local`, start the app on localhost, and claim the one-time admin grant as `shivamastha@gmail.com`. Test invited/uninvited Google accounts, invitation claim/revocation, admin promotion and active-session access removal. Do not disable approved invitees' OAuth first-login path.
+6. Through the local admin UI, create a synthetic festival with configurable days, blocks/flats, rates, committee membership and opening balances. Exercise all finance, own-entry edit/confirm/lock/unlock, overview/detail, meal, guest, catering and event flows.
+7. Run the workbook-import preview, print/XLSX exports, concurrency/idempotency and permission tests. Use local Supabase for destructive test cases and hosted **dev** for real provider integration. A mocked Google login alone is not end-to-end acceptance.
+8. Build Next.js in production mode and run that build locally. Repeat the critical journeys, compare accounting/attendance controls, restore an operator backup into an isolated local database, and record the results.
+9. Mark local end-to-end acceptance complete only when the committee walkthrough and required checks pass. Then compare app hosts and select Vercel or another provider with the owner.
 
-Migrations are version-controlled and forward-compatible where possible. Run destructive schema changes only after backup and a staged migration plan. An application rollback must remain compatible with the deployed schema; do not assume reverting Vercel also reverts the database. Maintain a maintenance/read-only switch for incidents. Repair posted money with corrective transactions, not ad-hoc row edits.
+Later deployment sequence, after local acceptance and hosting selection:
+
+1. Back up/configure **prod**, apply the migration set already tested in dev, and configure prod Auth, invitation hook and Storage. Configure the chosen app host's build/runtime and repository integration with **prod** environment variables, then build the release. Keep Supabase Free unless the owner separately changes that decision.
+2. Add the chosen existing-domain subdomain and copy the host's exact DNS records; preserve unrelated root/MX records. Verify TLS and domain routing.
+3. Configure prod's Site URL, exact app callback and Google provider callback/origin/consent-screen settings. Keep test and live data isolated; no broad redirect wildcards.
+4. Bootstrap `shivamastha@gmail.com` in prod, load verified live configuration/opening balances, invite actual committee accounts, and repeat authentication, role/lock, financial and export smoke tests on the hosted app using a controlled launch-check procedure. Do not migrate the dev test dataset or use dev user IDs as prod memberships.
+5. Verify exports/backups, tag the release, record schema/app versions and begin live use. Estimate this work once the provider is selected.
+
+Migrations are version-controlled and forward-compatible where possible. Run destructive schema changes only after backup and a staged migration plan. An application rollback must remain compatible with the deployed schema; reverting an app deployment does not revert the database. Maintain a maintenance/read-only switch for incidents. Repair posted money with corrective transactions, not ad-hoc row edits.
 
 ## 12. Operations, backup and recovery
 
-Proposed recovery targets for approval: no more than one hour of database data loss during active collection (RPO) and restoration within four hours (RTO). Supabase's daily backup alone does not meet the one-hour target. Implement hourly encrypted logical backups during event hours or select an appropriate paid point-in-time recovery option before promising that target.
+For the Free-plan implementation, use operator-managed logical database exports and separate copies of private-storage objects. During local development, export before migration/import experiments that affect retained data and after each accepted rehearsal. Keep synthetic seed data reproducible. Do not assume paid provider backups or point-in-time recovery in the implementation.
 
-Keep daily provider database backups plus separately encrypted off-site logical backups and private-storage object copies. Store the encryption key outside the backup destination. Supabase database backups include storage metadata, not object contents; test restoration of both. Retain festival closing exports and immutable report snapshots under a society-approved retention policy. See [Supabase backup scope](https://supabase.com/docs/guides/platform/backups).
+Before live use, set the export frequency, retention, recovery owner and measured recovery targets based on actual operation. Proposed starting schedule: before schema/import changes, after daily reconciliation and at final close; increase frequency if live collection needs a shorter data-loss window. No one-hour recovery-point guarantee is claimed by the current plan.
+
+Encrypt retained backups and keep the key separate from the backup destination. Test restoration of both database records and attachment files; keep final report snapshots. This export/recovery workflow can be exercised locally without purchasing a plan or selecting an app host.
 
 Restore drill: provision an isolated target, restore schema/data and storage objects, configure roles/secrets, verify counts/checksums and debit-credit equality, run report controls, and measure elapsed recovery time. Document who can restore and where keys are kept. Never test restoration by overwriting the live project.
 

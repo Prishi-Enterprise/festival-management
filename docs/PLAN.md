@@ -12,6 +12,9 @@ This delivery contains the plan, technical design and workbook analysis. Buildin
 
 - Separate private GitHub repository: `prishi-ai/festival-management`, supplied by the owner and checked out inside the PrishiAI workspace with independent Git history.
 - Next.js frontend/server application and Supabase backend.
+- Supabase **Free** for now; the owner has reviewed the allowed usage. No paid-plan upgrade is part of the current scope.
+- Use the Supabase **dev** database environment during development/testing and switch the launch application to the separate **prod** environment for committee use. Keep credentials, test data and live records separate.
+- Build and test the complete application on localhost first. Select Vercel or another app host only after local end-to-end acceptance. Domain/hosting decisions do not block local development.
 - Committee-only first release. Committee members enter information on behalf of flats and guests.
 - Google sign-in through Supabase Auth, restricted to Google accounts previously onboarded/invited by an admin.
 - The only initial admin is `shivamastha@gmail.com`. Admins can assign additional admins and manage committee membership.
@@ -136,7 +139,7 @@ Final financial summary, detailed financial report, financial catering settlemen
 
 ## Delivery sequence and acceptance
 
-Indicative effort for one full-time developer: **21–32 working days**, including testing and deployment, after required access and business decisions are available. This is an estimate, not a fixed deadline.
+Indicative effort for one full-time developer: **21–32 working days** through local end-to-end acceptance, after required integration access and business decisions are available. Hosted deployment will be estimated after choosing the provider. This is an estimate, not a fixed deadline.
 
 | Phase | Effort | Deliverable and exit condition |
 | --- | --- | --- |
@@ -145,45 +148,39 @@ Indicative effort for one full-time developer: **21–32 working days**, includi
 | 2. Expenses and catering | 4–6 days | Bills, advances, settlements, personal reimbursements and quantities; one complete supplier scenario reconciles |
 | 3. Meals and events | 4–5 days | Daily sheets, guests, cutoff/revisions, check-in, special-event lists; duplicate/concurrent actions behave correctly |
 | 4. Reports and controlled import | 3–5 days | Summary/detailed exports and flat-master import; all report totals tie and historical discrepancies are quarantined |
-| 5. Rehearsal and launch | 2–4 days | Staging rehearsal, restore drill, domain/auth checks and committee walkthrough; production readiness signed off |
+| 5. Local end-to-end acceptance | 2–4 days | Run Next.js on localhost against Supabase Free dev; complete Google login, finance, permission/lock, meal, event, export and recovery tests; committee walkthrough passes |
+
+After phase 5, choose app hosting and plan deployment, custom-domain setup and hosted smoke tests as a separate step. No hosted preview or paid staging environment is required to finish the local phase.
 
 If timing is tight, defer historical transaction import and automated PDF generation first. Keep collections, balances, expenses, dinner sheets and reconciliation in the launch scope.
 
-## Hosting recommendation
+## Backend and local-first delivery
 
-Recommend **Vercel for Next.js and Supabase for the backend**, with a subdomain such as `festival.<existing-domain>`. This keeps the operational burden low for a short, busy event. Hosting is a recommendation; no subscription has been purchased.
+**Confirmed: Supabase Free, separate dev/prod database environments, and a locally running Next.js app during development.** The owner has checked the allowed usage. Keep the current plan within that choice; no upgrade, paid compute or additional staging environment beyond dev/prod is assumed.
 
-Prices checked on 21 September 2026; USD before taxes, usage overages, email service and existing domain renewal.
+Use local Supabase for resettable migration/unit/integration tests and the owner's Supabase **dev** environment for real Google OAuth, Auth, RLS and Storage integration from localhost. Keep test data synthetic. The frontend runs locally even when it connects to hosted dev; real integration tests require network access. At launch, apply the same reviewed migrations to **prod**, configure its own Auth/Storage and credentials, load approved live configuration, and point the committee application to prod. Do not copy dev financial records or test users into prod.
 
-| Option | Indicative recurring base | Assessment |
-| --- | --- | --- |
-| Vercel Pro + Supabase Pro, one Micro production project | About **$45/month** with one Vercel paid developer seat | Recommended production baseline; straightforward Next.js deployment and database backups |
-| Same, plus a second Micro staging project | About **$55/month** | Stronger environment separation; additional Supabase compute is billable |
-| Vercel Hobby + Supabase Free | $0 within limits, if eligible | Development/pilot only by default; Vercel Hobby is personal/non-commercial and Supabase Free can pause after inactivity |
-| Cloudflare Workers Paid + Supabase Pro | Starts around **$30/month** before usage | Lower subscription base; validate current Next.js runtime/deployment compatibility, auth and report generation first |
+Local acceptance covers invited Google login, initial/admin promotion flows, festival and flat setup, charges, collections, expenses, own-entry editing, admin confirmation/locking/unlocking, overview/detail access, holder balances, guests, meal sheets, events and exports. Reconcile the full sample festival and verify a production-mode Next.js build running locally before discussing deployment.
 
-Vercel Pro lists $20/month, and Supabase Pro starts at $25/month including compute credit sufficient for one Micro project. Extra compute, seats and usage can raise this. See [Vercel pricing](https://vercel.com/pricing), [Supabase pricing](https://supabase.com/pricing) and [Vercel Hobby restrictions](https://vercel.com/docs/plans/hobby).
+**App hosting is undecided.** After local acceptance, compare Vercel and other suitable providers against the tested app's runtime, custom-domain needs, expected usage, eligibility and current costs. Select a provider then and attach the existing domain afterward. The previous paid hosting recommendation and budget are not the current baseline.
 
-Cloudflare Workers Paid has a $5 base. Its current Next.js guide recommends vinext; adopting that path adds a compatibility decision to this native Next.js project. See [Workers pricing](https://developers.cloudflare.com/workers/platform/pricing/) and [Next.js deployment guidance](https://developers.cloudflare.com/workers/framework-guides/web-apps/nextjs/).
-
-Supabase Pro provides seven days of daily database backups. Storage files need a separate backup procedure. Free projects can pause, which matters between annual festivals. See [database backups](https://supabase.com/docs/guides/platform/backups) and [pausing behavior](https://supabase.com/docs/guides/platform/free-project-pausing).
-
-Prefer paid production during live collection and the festival. Decide year-round availability versus a deliberate off-season archive later. Use budget alerts and off-site backups; free-tier inactivity workarounds are not part of the design.
+Maintain operator-managed database exports and separate attachment backups for the Free setup. Exercise restoration locally. No paid backup feature or hosted preview is a prerequisite for local completion.
 
 ## Inputs still needed
 
 | Input | Needed before |
 | --- | --- |
-| Supabase production URL/project reference, publishable key, chosen region and operator access | Backend integration; secrets belong in environment settings, not this document |
+| Supabase dev URL/reference, publishable key and operator access | Local app integration; secrets belong in environment settings, not this document |
+| Supabase prod URL/reference, publishable key and operator access | Committee launch after local acceptance; keep separate from dev credentials/data |
 | Actual festival dates, Dussehra date and meal calendar | Creating live services and package coverage |
 | Guest price by service/day; guest age policy | Opening guest bookings |
 | Household entitlement under the compulsory fee | Enabling included-meal enrollment |
 | Package cancellation/partial-attendance refund rule and RSVP cutoff | Final meal workflow acceptance |
 | Committee Google emails, festival assignments, wallets/accounts and verified opening balances | Live access and finance setup; initial admin email is already confirmed |
 | Google Cloud OAuth client and consent-screen access | Google sign-in setup; store the client secret only in Supabase provider settings |
-| Domain/subdomain, DNS provider and hosting budget | Production domain and subscription setup |
+| Domain/subdomain, DNS provider and hosting choice/budget | Deferred until local end-to-end tests pass; not needed for localhost testing |
 | Historical discrepancies and migration scope | Importing 2025 transactions; not required for a clean new festival |
 
-## Launch readiness
+## Local acceptance and later launch
 
-Launch after a rehearsal covering one flat payment split across cash/UPI, a holder handover, a vendor advance and final bill, a personal reimbursement, a guest cancellation, a free child, a meal-list revision, an event contribution and final reports. All money and attendance totals must reconcile. The technical operator must demonstrate recovery from backup and the committee must have a printed dinner-list fallback for connectivity loss.
+Complete a local rehearsal covering one flat payment split across cash/UPI, a holder handover, a vendor advance and final bill, a personal reimbursement, a guest cancellation, a free child, a meal-list revision, an event contribution and final reports. Verify member editing before confirmation, rejection after locking, admin unlock/reconfirmation, and admin-only detailed reports. All money and attendance totals must reconcile, and recovery from an operator export must work. Record test results before choosing hosting. Later, repeat domain/auth and critical-flow smoke tests on the selected host before going live; prepare the printed dinner-list fallback then.
