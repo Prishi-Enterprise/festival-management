@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { FlatContactEditor } from "@/components/flat-contact-editor";
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { saveFlatPayment } from "@/app/desk/flat-payment-actions";
@@ -9,11 +10,13 @@ import { rupeesToPaise } from "@/lib/validation";
 export function FlatPaymentForm({
   data: d,
   accounts,
+  admin = false,
   entry,
   initialPurpose = "Fixed contribution",
 }: {
   data: OperationsData;
   accounts: Account[];
+  admin?: boolean;
   entry: Entry | null;
   initialPurpose?: "Fixed contribution" | "Meal package";
 }) {
@@ -255,6 +258,16 @@ export function FlatPaymentForm({
                 </small>
               </label>
             )}
+            {enrollment && (
+              <p className="notice">
+                Contact: {enrollment.contact_phone ?? "Not yet registered"}.{" "}
+                {admin ? (
+                  <a href="#flat-contact">Add or update contact below</a>
+                ) : (
+                  "Ask a society admin to update the contact."
+                )}
+              </p>
+            )}
             <h2>
               {fixed
                 ? "Fixed attendees / members"
@@ -402,6 +415,13 @@ export function FlatPaymentForm({
           </fieldset>
         </form>
       </section>
+      {admin && enrollment && (
+        <FlatContactEditor
+          key={enrollment.id}
+          id={enrollment.id}
+          phone={enrollment.contact_phone ?? null}
+        />
+      )}
     </>
   );
 }

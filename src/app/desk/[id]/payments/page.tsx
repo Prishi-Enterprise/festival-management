@@ -40,6 +40,7 @@ export default async function Page({
       }
       data={data.data as OperationsData}
       accounts={accounts.data as Account[]}
+      admin={member.role === "admin"}
       entry={receipt.data as Entry | null}
     />
   );
