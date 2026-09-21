@@ -104,7 +104,7 @@ it("persists custom child age brackets and rejects invalid ranges", async () => 
     ]),
   ).rejects.toThrow("ordered");
 });
-it("allows enabling unused meals after enrollment while protecting existing entitlements and check-ins", async () => {
+it("allows adding, changing and removing unused coverage after enrollment while protecting check-ins", async () => {
   await asUser(db, ADMIN, "select add_flats('A',array['101'])");
   const flat = (await db.query<{ id: string }>("select id from flats limit 1"))
     .rows[0].id;
@@ -134,16 +134,26 @@ it("allows enabling unused meals after enrollment while protecting existing enti
       )
     ).rows,
   ).toHaveLength(2);
-  await expect(
-    asUser(db, ADMIN, "select save_meal_calendar($1,$2)", [
-      fid,
-      enabled.map((r) => ({ ...r, coverage: "package", version: 2 })),
-    ]),
-  ).rejects.toThrow("Existing enrolled meal coverage");
+  await asUser(db, ADMIN, "select save_meal_calendar($1,$2)", [
+    fid,
+    enabled.map((r) => ({ ...r, coverage: "package", version: 2 })),
+  ]);
+  await asUser(db, ADMIN, "select save_meal_calendar($1,$2)", [
+    fid,
+    enabled.map((r) => ({ ...r, coverage: "not_served", version: 3 })),
+  ]);
+  expect(
+    (
+      await db.query(
+        "select id from meal_services where festival_id=$1 and coverage='not_served'",
+        [fid],
+      )
+    ).rows,
+  ).toHaveLength(2);
   const extra = rows(["Snacks"]).map((r) => ({ ...r, coverage: "not_served" }));
   await asUser(db, ADMIN, "select save_meal_calendar($1,$2)", [
     fid,
-    [...enabled.map((r) => ({ ...r, version: 2 })), ...extra],
+    [...enabled.map((r) => ({ ...r, version: 4 })), ...extra],
   ]);
   const service = (
     await db.query<{ id: string }>(
@@ -159,7 +169,7 @@ it("allows enabling unused meals after enrollment while protecting existing enti
     asUser(db, ADMIN, "select save_meal_calendar($1,$2)", [
       fid,
       [
-        ...enabled.map((r) => ({ ...r, version: 3 })),
+        ...enabled.map((r) => ({ ...r, version: 5 })),
         ...extra.map((r) => ({ ...r, coverage: "fixed", version: 1 })),
       ],
     ]),
