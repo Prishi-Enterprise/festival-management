@@ -15,6 +15,7 @@ export async function saveOperation(
   const p = result.data as Record<string, unknown>;
   const names: Record<Operation, string> = {
     guest: "save_guest_booking",
+    guest_payment: "save_guest_payment",
     resident_checkin: "check_in_residents",
     guest_checkin: "check_in_guest",
     event: "save_festival_event",

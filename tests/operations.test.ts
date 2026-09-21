@@ -209,8 +209,17 @@ it("guest passes enforce service, quantity, cancellation, cutoff and stale-updat
     note: "",
     cancelled: false,
   };
-  await call("save_guest_booking", g);
-  await call("save_guest_booking", g);
+  const guestEntry = {
+    ...receipt("Guest meals", 60000),
+    ...g,
+    guest_id: null,
+    payment_mode: "collected",
+  };
+  await expect(call("save_guest_booking", g)).rejects.toThrow(
+    "Create a guest entry",
+  );
+  await call("save_guest_payment", guestEntry);
+  await call("save_guest_payment", guestEntry);
   const saved = (await data()).guests.find((x) => x.id === g.id)!;
   const pass = (
     await db.query<{ v: { count: number; flat_id?: string } }>(
@@ -263,7 +272,7 @@ it("guest passes enforce service, quantity, cancellation, cutoff and stale-updat
     [fixedMeal],
   );
   await expect(
-    call("save_guest_booking", { ...g, id: randomUUID() }),
+    call("save_guest_payment", { ...guestEntry, id: randomUUID() }),
   ).rejects.toThrow("closed");
 });
 it("catering generates one bill and allocations cannot exceed a confirmed supplier payment", async () => {
@@ -401,4 +410,115 @@ it("under-seven package registration is free and cannot be used for adults", asy
       member_ids: [people[0].id],
     }),
   ).rejects.toThrow("under-seven");
+});
+
+it("links payee dues to passes without cash, and reconciles only confirmed settlements", async () => {
+  const p = {
+    ...receipt("Guest meals", 40000),
+    service_id: packageMeal,
+    guest_id: null,
+    payment_mode: "payee_due",
+    account_id: null,
+    vendor_id: vendor,
+    adults: 2,
+    children: 0,
+    under_seven: 0,
+    note: "",
+  };
+  const before = (await db.query("select * from public.finance_entries")).rows
+    .length;
+  await call("save_guest_payment", p);
+  await call("save_guest_payment", p);
+  expect(
+    (await db.query("select * from public.finance_entries")).rows,
+  ).toHaveLength(before);
+  expect((await data()).guests.find((g) => g.id === p.id)?.payment_status).toBe(
+    "payee_due",
+  );
+  await asUser(db, MEMBER, "select public.check_in_guest($1,$2,1,1)", [
+    p.id,
+    packageMeal,
+  ]);
+  const settle = {
+    ...receipt("Guest meals", 20000),
+    service_id: packageMeal,
+    guest_id: p.id,
+    payment_mode: "collected",
+  };
+  await call("save_guest_payment", settle);
+  await call("save_guest_payment", settle);
+  const due = async (user = MEMBER) =>
+    (
+      await asUser<{ v: { id: string; confirmed: number; pending: number }[] }>(
+        db,
+        user,
+        "select public.guest_due_report($1) v",
+        [f],
+      )
+    ).rows[0].v.find((d) => d.id === p.id)!;
+  expect(await due()).toMatchObject({ confirmed: 0, pending: 20000 });
+  await expect(
+    call("save_guest_payment", { ...settle, id: randomUUID(), amount: 30000 }),
+  ).rejects.toThrow("exceeds");
+  await expect(
+    call("save_finance_entry", { ...settle, version: 1, kind: "donation" }),
+  ).rejects.toThrow("pass link");
+  await review(settle.id, 1);
+  expect(await due()).toMatchObject({ confirmed: 20000, pending: 0 });
+  await review(settle.id, 2, "unlock");
+  expect(await due()).toMatchObject({ confirmed: 0, pending: 20000 });
+  await expect(
+    call("save_guest_payment", { ...p, guest_id: p.id, version: 1 }),
+  ).rejects.toThrow("Payments already exist");
+  await expect(
+    asUser(db, OUTSIDER, "select public.guest_due_report($1)", [f]),
+  ).rejects.toThrow();
+  await expect(
+    asUser(db, MEMBER, "select * from public.guest_dues"),
+  ).rejects.toThrow();
+});
+it("rolls back pass creation if its receipt is invalid and rejects cross-festival or wrong-flat links", async () => {
+  const p = {
+    ...receipt("Guest meals", 20000),
+    service_id: packageMeal,
+    guest_id: null,
+    payment_mode: "collected",
+    adults: 1,
+    children: 0,
+    under_seven: 0,
+    note: "",
+  };
+  await expect(
+    call("save_guest_payment", { ...p, account_id: randomUUID() }),
+  ).rejects.toThrow();
+  expect(
+    (await db.query("select * from public.guest_bookings where id=$1", [p.id]))
+      .rows,
+  ).toHaveLength(0);
+  await expect(
+    call("save_guest_payment", { ...p, festival_id: randomUUID() }),
+  ).rejects.toThrow();
+  await call("save_guest_payment", p);
+  await expect(
+    call("save_guest_payment", {
+      ...p,
+      id: randomUUID(),
+      guest_id: p.id,
+      flat_id: randomUUID(),
+    }),
+  ).rejects.toThrow("same flat");
+  await expect(
+    call("save_guest_payment", { ...p, adults: 2 }),
+  ).rejects.toThrow();
+  expect(
+    (
+      await db.query(
+        "select * from public.guest_receipt_links where guest_id=$1",
+        [p.id],
+      )
+    ).rows,
+  ).toHaveLength(1);
+  await expect(
+    call("save_guest_payment", { ...p, id: randomUUID() }, OUTSIDER),
+  ).rejects.toThrow();
 });

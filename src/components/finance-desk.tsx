@@ -31,7 +31,7 @@ export function FinanceDesk(p: Props) {
   const [pending, start] = useTransition();
   const [notice, setNotice] = useState("");
   const [editing, setEditing] = useState<Entry | null>(null);
-  const [category, setCategory] = useState<string>("Guest meals");
+  const [category, setCategory] = useState<string>("Other");
   const [kind, setKind] = useState<EntryKind>("collection");
   const [requestId, setRequestId] = useState<string | null>(null);
   const [formKey, setFormKey] = useState(0);
@@ -55,7 +55,7 @@ export function FinanceDesk(p: Props) {
   function reset() {
     setEditing(null);
     setKind("collection");
-    setCategory("Guest meals");
+    setCategory("Other");
     setRequestId(null);
     setFormKey((k) => k + 1);
   }
@@ -108,6 +108,12 @@ export function FinanceDesk(p: Props) {
   return (
     <>
       <div className="entry-actions">
+        <Link
+          className="button secondary"
+          href={`/desk/${p.festivalId}/guest-payments`}
+        >
+          Guest entries & payee dues
+        </Link>
         <Link className="button" href={`/desk/${p.festivalId}/payments`}>
           Fixed / meal-package payment
         </Link>
@@ -169,6 +175,10 @@ export function FinanceDesk(p: Props) {
                 <select
                   value={kind}
                   onChange={(e) => {
+                    if (e.target.value === "guest_payment") {
+                      router.push(`/desk/${p.festivalId}/guest-payments`);
+                      return;
+                    }
                     if (
                       e.target.value === "fixed_payment" ||
                       e.target.value === "package_payment"
@@ -182,7 +192,7 @@ export function FinanceDesk(p: Props) {
                     setCategory(
                       (
                         {
-                          collection: "Guest meals",
+                          collection: "Other",
                           donation: "Donation",
                           transfer: "Transfer",
                           opening: "Opening funds",
@@ -194,6 +204,9 @@ export function FinanceDesk(p: Props) {
                 >
                   {!editing && (
                     <>
+                      <option value="guest_payment">
+                        Guest meal payment & pass
+                      </option>
                       <option value="fixed_payment">
                         Fixed contribution (flat payment)
                       </option>
@@ -207,7 +220,7 @@ export function FinanceDesk(p: Props) {
                     .map((k) => (
                       <option key={k} value={k}>
                         {k === "collection"
-                          ? "Guest / other flat receipt"
+                          ? "Other flat receipt"
                           : kindLabels[k]}
                       </option>
                     ))}
@@ -340,7 +353,11 @@ export function FinanceDesk(p: Props) {
                       .filter(
                         (c) =>
                           kind !== "collection" ||
-                          !["Fixed contribution", "Meal package"].includes(c),
+                          ![
+                            "Fixed contribution",
+                            "Meal package",
+                            ...(!editing ? ["Guest meals"] : []),
+                          ].includes(c),
                       )
                       .map((c) => (
                         <option key={c} value={c}>
@@ -558,6 +575,15 @@ export function FinanceDesk(p: Props) {
                               className="text-button"
                               disabled={pending}
                               onClick={() => {
+                                if (
+                                  e.kind === "collection" &&
+                                  e.category === "Guest meals"
+                                ) {
+                                  router.push(
+                                    `/desk/${p.festivalId}/guest-payments?entry=${e.id}`,
+                                  );
+                                  return;
+                                }
                                 if (
                                   e.kind === "collection" &&
                                   [

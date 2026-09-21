@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { attendancePage, matchesAttendance } from "@/lib/attendance-list";
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { OperationForm, type Field } from "./operation-form";
 import {
   mealTotal,
@@ -18,13 +19,21 @@ export function AttendanceDesk({
   member: Member;
 }) {
   const services = d.services.filter((s) => s.coverage !== "not_served");
-  const [selected, setSelected] = useState(services[0]?.id ?? "");
+  const params = useSearchParams();
+  const selected = services.some((s) => s.id === params.get("service"))
+    ? params.get("service")!
+    : (services[0]?.id ?? "");
+  const setSelected = (id: string) => {
+    const query = new URLSearchParams(window.location.search);
+    query.set("service", id);
+    window.history.replaceState(null, "", `?${query}`);
+  };
   const service = services.find((s) => s.id === selected);
   const [residentSearch, setResidentSearch] = useState("");
   const [guestSearch, setGuestSearch] = useState("");
   const [residentPage, setResidentPage] = useState(0);
   const [guestPage, setGuestPage] = useState(0);
-  const [savedGuest, setSavedGuest] = useState("");
+  const [savedGuest, setSavedGuest] = useState(params.get("guest") ?? "");
   const [notice, setNotice] = useState("");
   const [editing, setEditing] = useState<Guest | "new" | null>(null);
   const flat = (id: string) => {
@@ -237,13 +246,15 @@ export function AttendanceDesk({
               </p>
             )}
             <p>
-              Guest registration creates a pass for the selected meal. Record
-              any guest payment separately in Finance; automatic billing is
-              deferred.
+              Every new guest pass is created with a guest entry. Guests can
+              check in before admin confirmation.
             </p>
-            <button className="button" onClick={() => setEditing("new")}>
-              Register guests
-            </button>
+            <Link
+              className="button"
+              href={`/desk/${d.festival.id}/guest-payments`}
+            >
+              Record guest entry & create pass
+            </Link>
             <div className="table-scroll">
               <table>
                 <thead>
@@ -268,6 +279,15 @@ export function AttendanceDesk({
                           </Link>
                         </small>
                         <small>{g.pass_code}</small>
+                        <small>
+                          {g.payment_status === "confirmed"
+                            ? "Receipt confirmed"
+                            : g.payment_status === "pending"
+                              ? "Receipt awaiting confirmation"
+                              : g.payment_status === "payee_due"
+                                ? "Payee owes guest fee"
+                                : "No active linked receipt"}
+                        </small>
                       </td>
                       <td>
                         {g.adults + g.children + g.under_seven}
@@ -280,6 +300,14 @@ export function AttendanceDesk({
                           : g.adults + g.children + g.under_seven - g.attended}
                       </td>
                       <td>
+                        {!g.cancelled && (
+                          <Link
+                            className="text-button"
+                            href={`/desk/${d.festival.id}/guest-payments?guest=${g.id}`}
+                          >
+                            Record linked payment
+                          </Link>
+                        )}
                         {g.created_by === member.user_id && (
                           <button
                             className="text-button"

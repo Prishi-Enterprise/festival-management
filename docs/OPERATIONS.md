@@ -103,3 +103,11 @@ and settles the payable without counting the payment as a second expense.
 ## Report access
 
 Admins set **Can view reports** when inviting or managing a committee member in People & access. It permits the general financial overview for assigned festivals only. Detailed reports and financial exports remain admin-only. Existing and new committee memberships default to denied. Revocation takes effect on the next request; already viewed data cannot be recalled. Attendance, event rosters, catering quantities and access to own entries remain available without financial report permission.
+
+## Guest entries and payee reconciliation
+
+New passes are created only through **Guest entries & payee dues** / **Guest meal payment & pass**. Choose a meal, flat and guest counts, then either cash/online received or a named supplier/reimbursement payee who owes the guest fee. The latter is a separate receivable owed to the festival, not a supplier expense, reimbursement payable or cash inflow.
+
+The backend saves a new pass and its entry atomically. Existing passes can receive additional linked receipts for split collections. Duplicate retries reuse the same IDs. Check-in does not require receipt confirmation. Pending receipts reserve due amounts; only confirmed receipts reduce the outstanding balance, and unlocking restores the amount owed. Overcollection against a recorded payee due is blocked, including pending receipts. Due amounts can be edited only by their creator before linked payments exist. Admin reports/CSV include the separate guest payee dues; committee members can see their own dues for reconciliation.
+
+Standalone new pass registration is disabled in the UI and database. Existing dev passes are preserved and can be linked to an entry. Cancelled passes cannot admit guests; cancellation does not erase the associated financial obligation. Fee collection is entered manually; automatic rate-based billing remains deferred.

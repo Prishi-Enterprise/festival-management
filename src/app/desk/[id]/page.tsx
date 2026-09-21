@@ -25,7 +25,7 @@ export default async function FestivalDesk({
     await Promise.all([
       supabase
         .from("finance_entries")
-        .select("*")
+        .select("*,guest_receipt_links(guest_id)")
         .eq("festival_id", id)
         .order("number", { ascending: false }),
       supabase

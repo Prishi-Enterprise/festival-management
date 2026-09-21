@@ -8,7 +8,7 @@ Use the launch-candidate Preview connected to Tokyo. Sign in with the existing d
 - [ ] Record a fixed contribution with named adults, children and under-sevens. Confirm pending payment does not allow attendance. Confirm full payment as admin and check eligibility for a covered meal.
 - [ ] Record a meal-package receipt selecting only enrolled residents. Confirm payment, then check the package meal roster. Try a free under-seven-only selection.
 - [ ] Open Attendance, choose day/meal, find a flat and save admitted headcount. Refresh and verify it persists; exceeding eligibility should fail.
-- [ ] Register guests, open/share the generated pass and check in guests against that meal. Check remaining allowance; test cancellation before admission and closed registration.
+- [ ] Create a guest entry with cash/online collection, open/share the generated pass and check in guests against that meal. Check remaining allowance; test cancellation before admission and closed registration.
 - [ ] Enter a catering run and quantities. Confirm its bill and supplier payment, allocate the payment and verify the balance. Expected and admitted quantities should match attendance.
 - [ ] Create a Mahila Aarati or Veshbusha event, add participants, check attendance and export the roster.
 - [ ] Try category dropdowns and Other with required free text. Verify the admin report, holder balances and exports.
@@ -18,3 +18,5 @@ Use the launch-candidate Preview connected to Tokyo. Sign in with the existing d
 Current constraints: the first fixed attendee list is immutable; additional people register as guests. Check-in uses admitted headcounts. Guest fees and receivables are entered manually; automatic billing is deferred. Catering financial controls are admin-only.
 
 Record issues with the page, flat/meal/event, steps and expected result. After approval, deploy a fresh production build against Mumbai and verify `sb@prishi.in` sign-in. Development transactions are not copied.
+
+- [ ] Create a guest entry with **Payee owes fee — collect later**. Verify the pass admits guests before payment confirmation, and no cash is added. Record partial cash/online settlement against the existing pass, confirm it as admin, and check the outstanding due decreases. Unlocking should restore the outstanding amount. Check the separate payee-dues section in admin report and CSV.

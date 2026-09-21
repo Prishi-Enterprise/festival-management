@@ -73,6 +73,39 @@ export default async function Report({
         </dl>
       </section>
       <section className="panel finance-register">
+        <h2>Guest fees owed by payees</h2>
+        <p>
+          These receivables are separate from supplier reimbursements and cash
+          held. Pending collections do not reduce outstanding dues.
+        </p>
+        <div className="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Payee</th>
+                <th>Original due</th>
+                <th>Confirmed collection</th>
+                <th>Pending collection</th>
+                <th>Outstanding</th>
+              </tr>
+            </thead>
+            <tbody>
+              {r.guest_dues.map((d) => (
+                <tr key={d.id}>
+                  <td>{r.vendors.find((v) => v.id === d.vendor_id)?.name}</td>
+                  <td>{inr(d.amount)}</td>
+                  <td>{inr(d.confirmed)}</td>
+                  <td>{inr(d.pending)}</td>
+                  <td>{inr(d.amount - d.confirmed)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        {!r.guest_dues.length && <p>No guest fees owed by payees.</p>}
+        <Link href={`/desk/${id}/guest-payments`}>Reconcile guest entries</Link>
+      </section>
+      <section className="panel finance-register">
         <h2>Category summary</h2>
         <div className="table-scroll">
           <table>

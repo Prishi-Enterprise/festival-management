@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { Entry, Vendor } from "./finance";
+import { entrySchema, type Entry, type Vendor } from "./finance";
 import type { Flat, Day, Festival } from "./types";
 export { financeCategories } from "./categories";
 export const eventCategories = [
@@ -89,6 +89,17 @@ export const cateringSchema = z
     "Catering total cannot exceed ₹10,00,000.",
   );
 export const schemas = {
+  guest_payment: entrySchema.safeExtend({
+    payment_mode: z.enum(["collected", "payee_due"]).default("collected"),
+    kind: z.literal("collection"),
+    category: z.literal("Guest meals"),
+    service_id: z.uuid(),
+    guest_id: z.uuid().nullable(),
+    adults: count.default(0),
+    children: count.default(0),
+    under_seven: count.default(0),
+    note: z.string().trim().max(300).default(""),
+  }),
   guest: z.object({
     id: z.uuid(),
     service_id: z.uuid(),
@@ -212,6 +223,7 @@ export type Enrollment = {
   eligible: boolean;
 };
 export type Guest = {
+  payment_status?: "none" | "pending" | "confirmed" | "payee_due";
   id: string;
   pass_code: string;
   service_id: string;
@@ -224,4 +236,18 @@ export type Guest = {
   attended: number;
   created_by: string;
   version: number;
+};
+
+export type GuestDue = {
+  id: string;
+  vendor_id: string;
+  amount: number;
+  created_by: string;
+  version: number;
+  description: string;
+  flat_id: string;
+  service_id: string;
+  cancelled: boolean;
+  confirmed: number;
+  pending: number;
 };

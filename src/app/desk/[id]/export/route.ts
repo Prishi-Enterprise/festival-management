@@ -91,6 +91,27 @@ export async function GET(
       (f.paid / 100).toFixed(2),
       ((f.charged - f.paid) / 100).toFixed(2),
     ]);
+  rows.push(
+    [],
+    ["Guest fees owed by payees (separate from reimbursements)"],
+    [
+      "Flat",
+      "Payee",
+      "Original due INR",
+      "Confirmed collection INR",
+      "Pending collection INR",
+      "Outstanding INR",
+    ],
+  );
+  for (const due of r.guest_dues)
+    rows.push([
+      flat(due.flat_id),
+      r.vendors.find((v) => v.id === due.vendor_id)?.name ?? "",
+      (due.amount / 100).toFixed(2),
+      (due.confirmed / 100).toFixed(2),
+      (due.pending / 100).toFixed(2),
+      ((due.amount - due.confirmed) / 100).toFixed(2),
+    ]);
   return new Response(
     "\uFEFF" + rows.map((row) => row.map(csvCell).join(",")).join("\r\n"),
     {

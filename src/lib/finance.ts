@@ -47,6 +47,7 @@ export const entrySchema = z
   );
 export type EntryInput = z.infer<typeof entrySchema>;
 export type Entry = EntryInput & {
+  guest_receipt_links?: { guest_id: string } | null;
   number: number;
   created_by: string;
   status: "pending" | "confirmed" | "void";
@@ -71,6 +72,7 @@ export type Overview = {
   online: number;
 };
 export type FinanceReport = {
+  guest_dues: import("./operations").GuestDue[];
   festival_name: string;
   as_of: string;
   overview: Overview;
