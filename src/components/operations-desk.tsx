@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { OperationForm, type Field } from "./operation-form";
 import { PageHeading } from "./page-heading";
 import { PrintButton } from "./print-button";
@@ -36,9 +37,15 @@ export function OperationsDesk({
   member: Member;
 }) {
   const admin = member.role === "admin";
-  const [tab, setTab] = useState("catering");
+  const searchParams = useSearchParams();
+  const tab = searchParams.get("tab") === "events" ? "events" : "catering";
+  function selectView(key: string, value: string) {
+    const params = new URLSearchParams(window.location.search);
+    params.set(key, value);
+    window.history.replaceState(null, "", `?${params.toString()}`);
+  }
   const served = d.services.filter((s) => s.coverage !== "not_served");
-  const [serviceId, setServiceId] = useState(served[0]?.id ?? "");
+  const serviceId = searchParams.get("service") ?? served[0]?.id ?? "";
   const service = served.find((s) => s.id === serviceId) ?? served[0];
   const [editEvent, setEditEvent] = useState<FestivalEvent | "new" | null>(
     null,
@@ -46,7 +53,7 @@ export function OperationsDesk({
   const [editParticipant, setEditParticipant] = useState<
     Participant | "new" | null
   >(null);
-  const [eventId, setEventId] = useState(d.events[0]?.id ?? "");
+  const eventId = searchParams.get("event") ?? d.events[0]?.id ?? "";
   const event = d.events.find((e) => e.id === eventId) ?? d.events[0];
   const [editCatering, setEditCatering] = useState(false);
   const flatName = (id: string) => {
@@ -82,7 +89,7 @@ export function OperationsDesk({
       <select
         value={service?.id ?? ""}
         onChange={(e) => {
-          setServiceId(e.target.value);
+          selectView("service", e.target.value);
           setEditCatering(false);
         }}
       >
@@ -114,14 +121,14 @@ export function OperationsDesk({
           <button
             key={key}
             className={tab === key ? "selected" : ""}
-            onClick={() => setTab(key)}
+            onClick={() => selectView("tab", key)}
             aria-pressed={tab === key}
           >
             {label}
           </button>
         ))}
       </nav>
-      {(tab === "meals" || tab === "catering") && !service && (
+      {tab === "catering" && !service && (
         <section className="panel empty-state">
           <h2>No meals configured yet</h2>
           <p>
@@ -280,7 +287,7 @@ export function OperationsDesk({
               <select
                 value={event?.id ?? ""}
                 onChange={(e) => {
-                  setEventId(e.target.value);
+                  selectView("event", e.target.value);
                   setEditParticipant(null);
                 }}
               >
@@ -340,7 +347,10 @@ export function OperationsDesk({
                     type: "checkbox",
                   },
                 ]}
-                onSaved={() => setEditEvent(null)}
+                onSaved={(saved) => {
+                  selectView("event", String(saved.id));
+                  setEditEvent(null);
+                }}
               />
               <button
                 className="text-button"
