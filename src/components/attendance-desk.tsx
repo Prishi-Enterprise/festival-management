@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { attendancePage, matchesAttendance } from "@/lib/attendance-list";
 import { useState } from "react";
 import { OperationForm, type Field } from "./operation-form";
 import {
@@ -19,18 +20,35 @@ export function AttendanceDesk({
   const services = d.services.filter((s) => s.coverage !== "not_served");
   const [selected, setSelected] = useState(services[0]?.id ?? "");
   const service = services.find((s) => s.id === selected);
-  const [search, setSearch] = useState("");
+  const [residentSearch, setResidentSearch] = useState("");
+  const [guestSearch, setGuestSearch] = useState("");
+  const [residentPage, setResidentPage] = useState(0);
+  const [guestPage, setGuestPage] = useState(0);
+  const [savedGuest, setSavedGuest] = useState("");
+  const [notice, setNotice] = useState("");
   const [editing, setEditing] = useState<Guest | "new" | null>(null);
   const flat = (id: string) => {
     const f = d.flats.find((f) => f.id === id);
     return f ? `${f.block}–${f.flat_number}` : "";
   };
-  const matches = (id: string, pass = "") =>
-    `${flat(id)} ${pass}`.toLowerCase().includes(search.toLowerCase().trim());
   const rows = d.attendance.filter((a) => a.service_id === selected);
   const guests = d.guests.filter((g) => g.service_id === selected);
   const residents = rows.filter((a) =>
     d.enrollments.some((e) => e.id === a.id),
+  );
+  const residentList = attendancePage(
+    residents.filter((a) => matchesAttendance(residentSearch, flat(a.flat_id))),
+    residentPage,
+  );
+  const guestList = attendancePage(
+    guests
+      .filter((g) =>
+        matchesAttendance(guestSearch, flat(g.flat_id), g.pass_code),
+      )
+      .sort(
+        (a, b) => Number(b.id === savedGuest) - Number(a.id === savedGuest),
+      ),
+    guestPage,
   );
   const expected = rows
     .filter((a) => a.confirmed)
@@ -94,7 +112,11 @@ export function AttendanceDesk({
                 onChange={(e) => {
                   setSelected(e.target.value);
                   setEditing(null);
-                  setSearch("");
+                  setResidentSearch("");
+                  setGuestSearch("");
+                  setResidentPage(0);
+                  setGuestPage(0);
+                  setNotice("");
                 }}
               >
                 {services.map((s) => (
@@ -103,14 +125,6 @@ export function AttendanceDesk({
                   </option>
                 ))}
               </select>
-            </label>
-            <label>
-              Find flat or guest pass
-              <input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="A–101 or pass code"
-              />
             </label>
             <p>
               <strong>{expected} eligible diners</strong> ·{" "}
@@ -123,6 +137,18 @@ export function AttendanceDesk({
           </section>
           <section className="panel finance-register">
             <h2>Residents</h2>
+            <label>
+              Search residents by flat number
+              <input
+                type="search"
+                value={residentSearch}
+                placeholder="101 or A-101"
+                onChange={(e) => {
+                  setResidentSearch(e.target.value);
+                  setResidentPage(0);
+                }}
+              />
+            </label>
             <div className="table-scroll">
               <table>
                 <thead>
@@ -135,55 +161,81 @@ export function AttendanceDesk({
                   </tr>
                 </thead>
                 <tbody>
-                  {residents
-                    .filter((a) => matches(a.flat_id))
-                    .map((a) => (
-                      <tr key={a.id}>
-                        <td>
-                          {flat(a.flat_id)}
-                          <small>
-                            {a.confirmed
-                              ? "Fixed fee confirmed"
-                              : "Awaiting confirmed fixed payment"}
-                          </small>
-                        </td>
-                        <td>{mealTotal(a)}</td>
-                        <td>{a.attended}</td>
-                        <td>{Math.max(0, mealTotal(a) - a.attended)}</td>
-                        <td>
-                          {a.confirmed && (
-                            <OperationForm
-                              compact
-                              key={`${a.id}-${a.service_id}-${a.version}`}
-                              operation="resident_checkin"
-                              base={{
-                                id: a.id,
-                                service_id: selected,
-                                version: a.version,
-                                attended: a.attended,
-                              }}
-                              fields={[
-                                {
-                                  name: "attended",
-                                  label: `Total admitted ${flat(a.flat_id)}`,
-                                  type: "number",
-                                  max: mealTotal(a),
-                                  required: true,
-                                },
-                              ]}
-                              button="Save check-in"
-                            />
-                          )}
-                        </td>
-                      </tr>
-                    ))}
+                  {residentList.items.map((a) => (
+                    <tr key={a.id}>
+                      <td>
+                        {flat(a.flat_id)}
+                        <small>
+                          {a.confirmed
+                            ? "Fixed fee confirmed"
+                            : "Awaiting confirmed fixed payment"}
+                        </small>
+                      </td>
+                      <td>{mealTotal(a)}</td>
+                      <td>{a.attended}</td>
+                      <td>{Math.max(0, mealTotal(a) - a.attended)}</td>
+                      <td>
+                        {a.confirmed && (
+                          <OperationForm
+                            compact
+                            key={`${a.id}-${a.service_id}-${a.version}`}
+                            operation="resident_checkin"
+                            base={{
+                              id: a.id,
+                              service_id: selected,
+                              version: a.version,
+                              attended: a.attended,
+                            }}
+                            fields={[
+                              {
+                                name: "attended",
+                                label: `Total admitted ${flat(a.flat_id)}`,
+                                type: "number",
+                                max: mealTotal(a),
+                                required: true,
+                              },
+                            ]}
+                            button="Save check-in"
+                          />
+                        )}
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
-            {!residents.length && <p>No fixed attendees registered yet.</p>}
+            {!residentList.total && (
+              <p>
+                {residents.length
+                  ? "No residents match this flat number."
+                  : "No fixed attendees registered yet."}
+              </p>
+            )}
+            <AttendancePagination
+              list={residentList}
+              onPage={setResidentPage}
+              label="Residents"
+            />
           </section>
           <section className="panel finance-register">
             <h2>Guest passes</h2>
+            <label>
+              Search guest passes by flat number or pass code
+              <input
+                type="search"
+                value={guestSearch}
+                placeholder="101, A-101 or pass code"
+                onChange={(e) => {
+                  setGuestSearch(e.target.value);
+                  setGuestPage(0);
+                }}
+              />
+            </label>
+            {notice && (
+              <p className="notice" role="status">
+                {notice}
+              </p>
+            )}
             <p>
               Guest registration creates a pass for the selected meal. Record
               any guest payment separately in Finance; automatic billing is
@@ -203,73 +255,80 @@ export function AttendanceDesk({
                   </tr>
                 </thead>
                 <tbody>
-                  {guests
-                    .filter((g) => matches(g.flat_id, g.pass_code))
-                    .map((g) => (
-                      <tr key={g.id}>
-                        <td>
-                          {flat(g.flat_id)}
-                          <small>
-                            <Link
-                              href={`/guest-pass/${g.pass_code}`}
-                              target="_blank"
-                            >
-                              Open guest pass
-                            </Link>
-                          </small>
-                          <small>{g.pass_code}</small>
-                        </td>
-                        <td>
-                          {g.adults + g.children + g.under_seven}
-                          {g.cancelled ? " · Cancelled" : ""}
-                        </td>
-                        <td>
-                          {g.attended} /{" "}
-                          {g.cancelled
-                            ? 0
-                            : g.adults +
-                              g.children +
-                              g.under_seven -
-                              g.attended}
-                        </td>
-                        <td>
-                          {g.created_by === member.user_id && (
-                            <button
-                              className="text-button"
-                              onClick={() => setEditing(g)}
-                            >
-                              Edit registration
-                            </button>
-                          )}
-                          {!g.cancelled && (
-                            <OperationForm
-                              compact
-                              key={`${g.id}-${g.version}`}
-                              operation="guest_checkin"
-                              base={{
-                                id: g.id,
-                                service_id: selected,
-                                version: g.version,
-                                attended: g.attended,
-                              }}
-                              fields={[
-                                {
-                                  name: "attended",
-                                  label: "Total guests admitted",
-                                  type: "number",
-                                  max: g.adults + g.children + g.under_seven,
-                                  required: true,
-                                },
-                              ]}
-                              button="Save check-in"
-                            />
-                          )}
-                        </td>
-                      </tr>
-                    ))}
+                  {guestList.items.map((g) => (
+                    <tr key={g.id}>
+                      <td>
+                        {flat(g.flat_id)}
+                        <small>
+                          <Link
+                            href={`/guest-pass/${g.pass_code}`}
+                            target="_blank"
+                          >
+                            Open guest pass
+                          </Link>
+                        </small>
+                        <small>{g.pass_code}</small>
+                      </td>
+                      <td>
+                        {g.adults + g.children + g.under_seven}
+                        {g.cancelled ? " · Cancelled" : ""}
+                      </td>
+                      <td>
+                        {g.attended} /{" "}
+                        {g.cancelled
+                          ? 0
+                          : g.adults + g.children + g.under_seven - g.attended}
+                      </td>
+                      <td>
+                        {g.created_by === member.user_id && (
+                          <button
+                            className="text-button"
+                            onClick={() => setEditing(g)}
+                          >
+                            Edit registration
+                          </button>
+                        )}
+                        {!g.cancelled && (
+                          <OperationForm
+                            compact
+                            key={`${g.id}-${g.version}`}
+                            operation="guest_checkin"
+                            base={{
+                              id: g.id,
+                              service_id: selected,
+                              version: g.version,
+                              attended: g.attended,
+                            }}
+                            fields={[
+                              {
+                                name: "attended",
+                                label: "Total guests admitted",
+                                type: "number",
+                                max: g.adults + g.children + g.under_seven,
+                                required: true,
+                              },
+                            ]}
+                            button="Save check-in"
+                          />
+                        )}
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
+            {!guestList.total && (
+              <p>
+                {guests.length
+                  ? "No guest passes match this search."
+                  : "No guests registered for this meal yet."}
+              </p>
+            )}
+            <AttendancePagination
+              list={guestList}
+              onPage={setGuestPage}
+              label="Guest passes"
+            />
           </section>
           {editing && (
             <section className="panel finance-form">
@@ -291,7 +350,15 @@ export function AttendanceDesk({
                     ? fields
                     : fields.filter((f) => f.name !== "flat_id")
                 }
-                onSaved={() => setEditing(null)}
+                onSaved={(saved) => {
+                  setSavedGuest(String(saved.id));
+                  setGuestSearch("");
+                  setGuestPage(0);
+                  setNotice(
+                    "Guest pass saved. The updated pass appears first in the list.",
+                  );
+                  setEditing(null);
+                }}
               />
               <button className="text-button" onClick={() => setEditing(null)}>
                 Cancel editing
@@ -329,5 +396,41 @@ export function AttendanceDesk({
         </>
       )}
     </>
+  );
+}
+
+function AttendancePagination({
+  list,
+  onPage,
+  label,
+}: {
+  list: { page: number; pages: number; total: number };
+  onPage: (page: number) => void;
+  label: string;
+}) {
+  if (!list.total) return null;
+  return (
+    <nav className="entry-actions" aria-label={`${label} pages`}>
+      <span>
+        {list.page * 10 + 1}–{Math.min((list.page + 1) * 10, list.total)} of{" "}
+        {list.total}
+      </span>
+      <button
+        type="button"
+        className="button secondary"
+        disabled={list.page === 0}
+        onClick={() => onPage(list.page - 1)}
+      >
+        Previous
+      </button>
+      <button
+        type="button"
+        className="button secondary"
+        disabled={list.page + 1 >= list.pages}
+        onClick={() => onPage(list.page + 1)}
+      >
+        Next
+      </button>
+    </nav>
   );
 }

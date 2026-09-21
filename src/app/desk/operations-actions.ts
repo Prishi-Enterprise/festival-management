@@ -1,5 +1,5 @@
 "use server";
-import { revalidatePath } from "next/cache";
+import { refresh, revalidatePath } from "next/cache";
 import { requireMember } from "@/lib/auth";
 import { schemas, type Operation } from "@/lib/operations";
 export async function saveOperation(
@@ -68,5 +68,6 @@ export async function saveOperation(
     };
   revalidatePath("/desk", "layout");
   revalidatePath("/admin/festivals", "layout");
+  refresh();
   return { ok: true };
 }

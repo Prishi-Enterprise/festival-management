@@ -1,6 +1,5 @@
 "use client";
 import { useRef, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
 import { saveOperation } from "@/app/desk/operations-actions";
 import type { Operation } from "@/lib/operations";
 import { rupeesToPaise } from "@/lib/validation";
@@ -29,9 +28,8 @@ export function OperationForm({
   title?: string;
   button?: string;
   compact?: boolean;
-  onSaved?: () => void;
+  onSaved?: (saved: Record<string, unknown>) => void;
 }) {
-  const router = useRouter();
   const request = useRef<string | null>(null);
   const [pending, start] = useTransition();
   const [notice, setNotice] = useState("");
@@ -78,8 +76,7 @@ export function OperationForm({
           }
           setNotice("Saved.");
           request.current = null;
-          router.refresh();
-          onSaved?.();
+          onSaved?.(input);
         });
       }}
     >
