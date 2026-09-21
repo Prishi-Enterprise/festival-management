@@ -34,7 +34,9 @@ export default async function FestivalDesk({
         .eq("festival_id", id)
         .order("label"),
       supabase.from("vendors").select("*").eq("festival_id", id).order("name"),
-      supabase.rpc("finance_overview", { p_festival: id }),
+      member.role === "admin" || member.can_view_reports
+        ? supabase.rpc("finance_overview", { p_festival: id })
+        : Promise.resolve({ data: null, error: null }),
       supabase.rpc("finance_choices", { p_festival: id }),
       member.role === "admin"
         ? supabase.from("society_memberships").select("*").eq("active", true)
@@ -66,7 +68,7 @@ export default async function FestivalDesk({
         entries={entries.data as Entry[]}
         accounts={accounts.data as Account[]}
         vendors={vendors.data as Vendor[]}
-        overview={overview.data as Overview}
+        overview={overview.data as Overview | null}
         flats={choices.data.flats as Flat[]}
         people={people.data as Member[]}
       />

@@ -6,7 +6,7 @@
 - Admin-created named cash/online accounts and supplier/reimbursement payees.
 - Members see and edit only their own pending entries. Admins can review all entries, confirm and lock, unlock with a reason, or void pending entries. Admins cannot silently edit someone else's entry.
 - Approved balances come from immutable signed postings. Unlock adds reversals; reconfirmation posts the new revision. All revisions are audited. Funds cannot be spent before their inflow is confirmed. Transfers conserve total funds. Refunds cannot exceed a flat's confirmed net payments.
-- General aggregate overview for assigned committee members; named balances, supplier balances, flat statements, detailed register, CSV and print/PDF reports for admins.
+- General aggregate overview only for assigned committee members granted Can view reports (off by default); named balances, supplier balances, flat statements, detailed register, CSV and print/PDF reports for admins.
 - Meal calendar on each saved festival: breakfast/lunch/dinner individually covered by the fixed flat fee, per-person package, or not served. Lunch and dinner can both be selected. Guest prices are per service. No price is guessed if the default is blank. Under-seven resident pricing remains zero.
 - No `is_dussehra` column or special-day readiness requirement. Calendar coverage is authoritative; the old applied migration remains historical and a new migration removes the column.
 
@@ -99,3 +99,7 @@ for expense bills and supplier payments/advances. For a member's reimbursement,
 add that person's name as the payee, record the expense bill against them, then
 record the payment from the account reimbursing them. This records the cost once
 and settles the payable without counting the payment as a second expense.
+
+## Report access
+
+Admins set **Can view reports** when inviting or managing a committee member in People & access. It permits the general financial overview for assigned festivals only. Detailed reports and financial exports remain admin-only. Existing and new committee memberships default to denied. Revocation takes effect on the next request; already viewed data cannot be recalled. Attendance, event rosters, catering quantities and access to own entries remain available without financial report permission.

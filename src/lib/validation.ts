@@ -1,6 +1,7 @@
 import { z } from "zod";
 const money = z.number().int().min(0).max(100000000);
 export const inviteSchema = z.object({
+  can_view_reports: z.boolean().default(false),
   email: z.string().trim().toLowerCase().email().max(254),
   role: z.enum(["admin", "committee"]),
   festival_ids: z.array(z.uuid()).max(100),

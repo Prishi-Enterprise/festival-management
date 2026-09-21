@@ -70,7 +70,7 @@ beforeAll(async () => {
   await asUser(
     db,
     ADMIN,
-    "select public.invite_member('member@example.com','committee')",
+    "select public.invite_member('member@example.com','committee','{}',true)",
   );
   await asUser(db, MEMBER, "select public.claim_membership()");
   await asUser(db, ADMIN, "select public.add_flats('A',array['101'])");

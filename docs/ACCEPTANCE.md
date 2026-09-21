@@ -12,7 +12,7 @@ Use the launch-candidate Preview connected to Tokyo. Sign in with the existing d
 - [ ] Enter a catering run and quantities. Confirm its bill and supplier payment, allocate the payment and verify the balance. Expected and admitted quantities should match attendance.
 - [ ] Create a Mahila Aarati or Veshbusha event, add participants, check attendance and export the roster.
 - [ ] Try category dropdowns and Other with required free text. Verify the admin report, holder balances and exports.
-- [ ] As committee member, edit an own pending entry; verify another member's entries and confirmed entries cannot be edited. Verify overview/quantities are available but admin details are restricted.
+- [ ] As committee member, edit an own pending entry; verify another member's entries and confirmed entries cannot be edited. Verify catering quantities remain available, but the financial overview is hidden by default. Enable Can view reports in People & access, verify the overview appears, then revoke it and verify access disappears. Detailed reports remain admin-only.
 - [ ] Promote/demote the test member as admin. Confirm the last admin cannot be removed.
 
 Current constraints: the first fixed attendee list is immutable; additional people register as guests. Check-in uses admitted headcounts. Guest fees and receivables are entered manually; automatic billing is deferred. Catering financial controls are admin-only.

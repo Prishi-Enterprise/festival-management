@@ -22,7 +22,7 @@ type Props = {
   entries: Entry[];
   accounts: Account[];
   vendors: Vendor[];
-  overview: Overview;
+  overview: Overview | null;
   flats: Flat[];
   people: Member[];
 };
@@ -124,24 +124,28 @@ export function FinanceDesk(p: Props) {
           Catering & events
         </Link>
       </div>
-      <section className="finance-stats" aria-label="General overview">
-        {[
-          ["Collections", p.overview.collections],
-          ["Expense bills", p.overview.expenses],
-          ["Payments to suppliers", p.overview.payments],
-          ["Cash held", p.overview.cash],
-          ["Online held", p.overview.online],
-        ].map(([label, value]) => (
-          <div className="panel" key={String(label)}>
-            <small>{label}</small>
-            <strong>{inr(Number(value))}</strong>
-          </div>
-        ))}
-      </section>
-      <p className="muted">
-        {p.overview.pending} entries awaiting confirmation. Bills record costs;
-        supplier payments record money paid, including advances.
-      </p>
+      {p.overview && (
+        <>
+          <section className="finance-stats" aria-label="General overview">
+            {[
+              ["Collections", p.overview.collections],
+              ["Expense bills", p.overview.expenses],
+              ["Payments to suppliers", p.overview.payments],
+              ["Cash held", p.overview.cash],
+              ["Online held", p.overview.online],
+            ].map(([label, value]) => (
+              <div className="panel" key={String(label)}>
+                <small>{label}</small>
+                <strong>{inr(Number(value))}</strong>
+              </div>
+            ))}
+          </section>
+          <p className="muted">
+            {p.overview.pending} entries awaiting confirmation. Bills record
+            costs; supplier payments record money paid, including advances.
+          </p>
+        </>
+      )}
       {notice && (
         <p className="notice" role="status">
           {notice}

@@ -23,6 +23,7 @@ function MemberEditor({
 }) {
   const [role, setRole] = useState(member.role);
   const [active, setActive] = useState(member.active);
+  const [reports, setReports] = useState(member.can_view_reports);
   const [ids, setIds] = useState(assigned);
   const [message, setMessage] = useState("");
   const [pending, start] = useTransition();
@@ -57,6 +58,15 @@ function MemberEditor({
             </select>
           </label>
         </div>
+        <label className="checkbox-row">
+          <input
+            type="checkbox"
+            checked={role === "admin" || reports}
+            disabled={role === "admin"}
+            onChange={(e) => setReports(e.target.checked)}
+          />
+          Can view reports (general overview)
+        </label>
         <fieldset>
           <legend>Festival assignments</legend>
           {festivals.map((f) => (
@@ -100,6 +110,7 @@ function MemberEditor({
                 user_id: member.user_id,
                 role,
                 active,
+                can_view_reports: role === "committee" && reports,
                 version: member.version,
                 festival_ids: ids,
               });
@@ -157,6 +168,7 @@ export function UserManager({
                 const result = await inviteMember({
                   email: data.get("email"),
                   role: data.get("role"),
+                  can_view_reports: data.get("can_view_reports") === "on",
                   festival_ids: data.getAll("festivals"),
                 });
                 if (!result.ok) setError(result.error);
@@ -189,6 +201,10 @@ export function UserManager({
                 </select>
               </label>
             </div>
+            <label className="checkbox-row">
+              <input type="checkbox" name="can_view_reports" />
+              Can view reports (general overview)
+            </label>
             <fieldset>
               <legend>Assign festivals</legend>
               {festivals.length ? (
