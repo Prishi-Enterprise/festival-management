@@ -44,7 +44,6 @@ export default async function FestivalPage({
         festivalId={id}
         days={festival.data.days}
         services={meals.data as MealService[]}
-        defaultGuest={festival.data.rates.guest}
       />
       <GuestPackages
         festivalId={id}

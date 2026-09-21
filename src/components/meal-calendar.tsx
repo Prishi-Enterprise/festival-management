@@ -3,7 +3,6 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2 } from "lucide-react";
 import { saveMealCalendar, manageMeal } from "@/app/admin/actions";
-import { rupeesToPaise } from "@/lib/validation";
 import type { Day } from "@/lib/types";
 export type MealService = {
   id: string;
@@ -17,12 +16,10 @@ export function MealCalendar({
   festivalId,
   days,
   services,
-  defaultGuest,
 }: {
   festivalId: string;
   days: Day[];
   services: MealService[];
-  defaultGuest: number | null;
 }) {
   const router = useRouter();
   const [pending, start] = useTransition();
@@ -38,10 +35,7 @@ export function MealCalendar({
           service_date: d.service_date,
           meal,
           coverage: s?.coverage ?? "not_served",
-          guest:
-            s?.guest_rate == null && defaultGuest == null
-              ? ""
-              : String((s?.guest_rate ?? defaultGuest!) / 100),
+          guest_rate: s?.guest_rate ?? null,
           version: s?.version ?? 0,
         };
       }),
@@ -66,21 +60,7 @@ export function MealCalendar({
       )}
       <form
         action={() => {
-          let values;
-          try {
-            values = rows.map(({ guest, ...r }) => ({
-              ...r,
-              guest_rate:
-                r.coverage === "not_served"
-                  ? null
-                  : guest
-                    ? rupeesToPaise(guest)
-                    : null,
-            }));
-          } catch {
-            setNotice("Enter valid guest prices in rupees.");
-            return;
-          }
+          const values = rows;
           start(async () => {
             const result = await saveMealCalendar({
               festival_id: festivalId,
@@ -128,8 +108,7 @@ export function MealCalendar({
                       service_date: d.service_date,
                       meal,
                       coverage: "not_served" as const,
-                      guest:
-                        defaultGuest == null ? "" : String(defaultGuest / 100),
+                      guest_rate: null,
                       version: 0,
                     })),
                   ].sort((a, b) =>
