@@ -44,7 +44,9 @@ export function OperationsDesk({
     params.set(key, value);
     window.history.replaceState(null, "", `?${params.toString()}`);
   }
-  const served = d.services.filter((s) => s.coverage !== "not_served");
+  const served = d.services.filter(
+    (s) => s.coverage !== "not_served" || s.guest_available,
+  );
   const serviceId = searchParams.get("service") ?? served[0]?.id ?? "";
   const service = served.find((s) => s.id === serviceId) ?? served[0];
   const [editEvent, setEditEvent] = useState<FestivalEvent | "new" | null>(

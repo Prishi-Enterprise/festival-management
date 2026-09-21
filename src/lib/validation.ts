@@ -11,6 +11,8 @@ export const ratesSchema = z.object({
   adult: money,
   child: money,
   under_seven: z.literal(0),
+  child_min_age: z.number().int().min(0).max(17).default(7),
+  child_max_age: z.number().int().min(0).max(17).default(10),
   guest: money.nullable(),
   household_policy: z.enum(["unconfirmed", "all_residents"]),
   guest_age_policy: z.enum(["unconfirmed", "same_rate", "under_seven_free"]),

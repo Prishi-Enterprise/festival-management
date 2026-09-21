@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { OperationForm, type Field } from "./operation-form";
 import {
-  serviceLabel,
   type GuestDue,
   type OperationsData,
 } from "@/lib/operations";
@@ -32,11 +31,19 @@ export function GuestPaymentForm({
   const [mode, setMode] = useState(dueEntry ? "payee_due" : "collected");
   const [guestId, setGuestId] = useState(initialGuest ?? "");
   const guest = d.guests.find((g) => g.id === guestId);
+  const packages = d.guest_packages ?? [];
+  const [packageId, setPackageId] = useState(
+    guest?.package_id ?? packages.find((p) => p.active)?.id ?? "",
+  );
+  const selectedPackage = packages.find((p) => p.id === packageId);
   const services = d.services.filter(
     (s) => s.coverage !== "not_served" && s.guest_rate !== null,
   );
   const [serviceId, setServiceId] = useState(
-    guest?.service_id ?? services[0]?.id ?? "",
+    guest?.service_id ??
+      selectedPackage?.service_ids[0] ??
+      services[0]?.id ??
+      "",
   );
   const [saved, setSaved] = useState(false);
   const linked = !!entry?.guest_receipt_links || !!dueEntry;
@@ -57,19 +64,19 @@ export function GuestPaymentForm({
           },
           {
             name: "adults",
-            label: "Guests above 10",
+            label: `Guests above ${d.age_brackets?.child_max_age ?? 10}`,
             type: "number" as const,
             required: true,
           },
           {
             name: "children",
-            label: "Guests aged 7–10",
+            label: `Guests aged ${d.age_brackets?.child_min_age ?? 7}–${d.age_brackets?.child_max_age ?? 10}`,
             type: "number" as const,
             required: true,
           },
           {
             name: "under_seven",
-            label: "Guests under seven",
+            label: `Guests under ${d.age_brackets?.child_min_age ?? 7}`,
             type: "number" as const,
             required: true,
           },
@@ -120,9 +127,9 @@ export function GuestPaymentForm({
         creates the pass immediately; guests may check in before admin
         confirmation.
       </p>
-      {!services.length ? (
+      {!packages.some((p) => p.active) && !guest ? (
         <p className="notice">
-          Configure a served meal and its guest price first.
+          Ask an admin to configure a guest-pass package first.
         </p>
       ) : saved ? (
         <section className="panel">
@@ -165,22 +172,42 @@ export function GuestPaymentForm({
             </p>
           )}
           <label>
-            Day and meal
+            Guest-pass package
             <select
-              value={serviceId}
-              disabled={linked}
+              value={packageId}
+              disabled={linked || !!initialGuest}
               onChange={(e) => {
-                setServiceId(e.target.value);
+                setPackageId(e.target.value);
+                setServiceId(
+                  packages.find((p) => p.id === e.target.value)
+                    ?.service_ids[0] ?? "",
+                );
                 setGuestId("");
               }}
             >
-              {services.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {serviceLabel(s)}
-                </option>
-              ))}
+              {guest && !guest.package_id && (
+                <option value="">Existing single-meal pass</option>
+              )}
+              {packages
+                .filter((p) => p.active || p.id === guest?.package_id)
+                .map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name} · {p.service_date} · {inr(p.price)} / guest
+                  </option>
+                ))}
             </select>
           </label>
+          {selectedPackage && (
+            <p>
+              Included meals:{" "}
+              {(guest?.included_services ?? selectedPackage.service_ids)
+                .map((id) => d.services.find((s) => s.id === id)?.meal)
+                .join(" + ")}
+              . Price: {inr(guest?.unit_price ?? selectedPackage.price)} per
+              guest. Children in the free age bracket follow the festival
+              guest-age policy.
+            </p>
+          )}
           <label>
             Guest pass
             <select
@@ -192,7 +219,9 @@ export function GuestPaymentForm({
               {d.guests
                 .filter(
                   (g) =>
-                    g.service_id === serviceId &&
+                    (packageId
+                      ? g.package_id === packageId
+                      : g.service_id === serviceId) &&
                     (!g.cancelled || g.id === initialGuest) &&
                     (!entry || g.flat_id === entry.flat_id),
                 )
@@ -212,7 +241,7 @@ export function GuestPaymentForm({
             </p>
           )}
           <OperationForm
-            key={`${serviceId}-${guestId}-${mode}`}
+            key={`${packageId}-${serviceId}-${guestId}-${mode}`}
             operation="guest_payment"
             base={{
               ...(entry ?? {}),
@@ -226,7 +255,8 @@ export function GuestPaymentForm({
               category: "Guest meals",
               category_other: "",
               flat_id: guest?.flat_id ?? entry?.flat_id,
-              service_id: serviceId,
+              service_id: guest?.service_id ?? serviceId,
+              package_id: guest?.package_id ?? (packageId || null),
               guest_id: guestId || null,
               to_account_id: null,
               vendor_id: dueEntry?.vendor_id ?? null,

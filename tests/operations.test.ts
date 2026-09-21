@@ -574,3 +574,100 @@ it("admins can correct resident counts after eligibility changes, with audit his
   ).rows[0];
   expect(audit.details).toMatchObject({ before: before.attended, after: 1 });
 });
+
+it("one-day guest packages retain meals and support independent meal admissions", async () => {
+  await db.query(
+    "update meal_services set attendance_locked=false,booking_cutoff=null where festival_id=$1",
+    [f],
+  );
+  const pid = randomUUID();
+  const definition = {
+    id: pid,
+    festival_id: f,
+    name: "Lunch and dinner",
+    service_date: "2026-10-11",
+    price: 30000,
+    service_ids: [fixedMeal, packageMeal],
+    active: true,
+    version: 0,
+  };
+  await call("save_guest_package", definition, ADMIN);
+  const p = {
+    ...receipt("Guest meals", 60000),
+    package_id: pid,
+    service_id: fixedMeal,
+    guest_id: null,
+    adults: 2,
+    children: 0,
+    under_seven: 0,
+    note: "Package test",
+    payment_mode: "collected",
+  };
+  await call("save_guest_payment", p);
+  await call("save_guest_payment", p);
+  await asUser(db, MEMBER, "select check_in_guest($1,$2,1,2)", [
+    p.id,
+    fixedMeal,
+  ]);
+  await asUser(db, MEMBER, "select check_in_guest($1,$2,2,1)", [
+    p.id,
+    packageMeal,
+  ]);
+  const d = await data();
+  const guest = d.guests.find((g) => g.id === p.id)!;
+  expect(guest.checkins).toEqual(
+    expect.arrayContaining([
+      { guest_id: p.id, service_id: fixedMeal, attended: 2 },
+      { guest_id: p.id, service_id: packageMeal, attended: 1 },
+    ]),
+  );
+  expect(d.attendance.filter((a) => a.id === p.id)).toHaveLength(2);
+  await expect(
+    asUser(db, MEMBER, "select check_in_guest($1,$2,3,0)", [p.id, fixedMeal]),
+  ).rejects.toThrow("Only admins");
+  await asUser(db, ADMIN, "select check_in_guest($1,$2,3,0)", [
+    p.id,
+    fixedMeal,
+  ]);
+  await call(
+    "save_guest_package",
+    {
+      ...definition,
+      version: 1,
+      name: "Changed package",
+      price: 45000,
+      service_ids: [fixedMeal],
+    },
+    ADMIN,
+  );
+  expect((await data()).guests.find((g) => g.id === p.id)).toMatchObject({
+    unit_price: 30000,
+    included_services: [fixedMeal, packageMeal],
+    package_name: "Lunch and dinner",
+  });
+  const visible = (
+    await db.query<{ v: { meals: unknown[] } }>("select guest_pass($1) v", [
+      guest.pass_code,
+    ])
+  ).rows[0].v;
+  expect(visible.meals).toHaveLength(2);
+  await expect(
+    call(
+      "save_guest_package",
+      { ...definition, version: 2, service_date: "2026-10-12" },
+      ADMIN,
+    ),
+  ).rejects.toThrow("selected day");
+  await expect(
+    call("save_guest_package", { ...definition, version: 2 }, MEMBER),
+  ).rejects.toThrow("Admin access");
+  await asUser(db, ADMIN, "select manage_meal($1,'lunch','Community lunch')", [
+    f,
+  ]);
+  expect((await data()).services.find((s) => s.id === fixedMeal)?.meal).toBe(
+    "Community lunch",
+  );
+  await expect(
+    asUser(db, ADMIN, "select manage_meal($1,'Community lunch',null)", [f]),
+  ).rejects.toThrow("in use");
+});

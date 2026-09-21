@@ -68,3 +68,39 @@ it("does not allow committee users to configure meals", async () => {
     save(rows(["Prasad", "Evening snacks", "Community lunch"], 2), MEMBER),
   ).rejects.toThrow();
 });
+it("renames and removes unused meals without changing other service IDs", async () => {
+  await asUser(db, ADMIN, "select manage_meal($1,'Prasad','Snacks')", [
+    festival,
+  ]);
+  expect(
+    (await db.query("select id from meal_services where meal='Snacks'")).rows,
+  ).toHaveLength(2);
+  await asUser(db, ADMIN, "select manage_meal($1,'Snacks',null)", [festival]);
+  expect(
+    (await db.query("select id from meal_services where meal='Snacks'")).rows,
+  ).toHaveLength(0);
+});
+it("persists custom child age brackets and rejects invalid ranges", async () => {
+  const id = (
+    await asUser<{ id: string }>(db, ADMIN, "select save_festival($1) id", [
+      {
+        ...draft(),
+        rates: { ...draft().rates, child_min_age: 5, child_max_age: 12 },
+      },
+    ])
+  ).rows[0].id;
+  const result = (
+    await asUser<{
+      v: { age_brackets: { child_min_age: number; child_max_age: number } };
+    }>(db, ADMIN, "select operations_data($1) v", [id])
+  ).rows[0].v;
+  expect(result.age_brackets).toEqual({ child_min_age: 5, child_max_age: 12 });
+  await expect(
+    asUser(db, ADMIN, "select save_festival($1)", [
+      {
+        ...draft(),
+        rates: { ...draft().rates, child_min_age: 12, child_max_age: 5 },
+      },
+    ]),
+  ).rejects.toThrow("ordered");
+});

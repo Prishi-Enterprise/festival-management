@@ -98,3 +98,39 @@ export async function saveMealCalendar(input: unknown): Promise<Result> {
     p_services: parsed.data.services,
   });
 }
+
+export async function saveGuestPackage(input: unknown): Promise<Result> {
+  const parsed = z
+    .object({
+      id: z.uuid().nullable(),
+      festival_id: z.uuid(),
+      name: z.string().trim().min(1).max(80),
+      service_date: z.iso.date(),
+      price: z.number().int().min(0).max(100000000),
+      service_ids: z.array(z.uuid()).min(1).max(20),
+      active: z.boolean(),
+      version: z.number().int().min(0),
+    })
+    .safeParse(input);
+  if (!parsed.success)
+    return {
+      ok: false,
+      error: "Check pass name, date, price and included meals.",
+    };
+  return perform("save_guest_package", { p_input: parsed.data });
+}
+export async function manageMeal(input: unknown): Promise<Result> {
+  const parsed = z
+    .object({
+      festival_id: z.uuid(),
+      meal: z.string().min(1).max(60),
+      name: z.string().trim().min(1).max(60).nullable(),
+    })
+    .safeParse(input);
+  if (!parsed.success) return { ok: false, error: "Check the meal name." };
+  return perform("manage_meal", {
+    p_festival: parsed.data.festival_id,
+    p_meal: parsed.data.meal,
+    p_name: parsed.data.name,
+  });
+}

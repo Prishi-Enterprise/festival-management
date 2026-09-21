@@ -47,6 +47,8 @@ export function FestivalForm({
   const [memberIds, setMemberIds] = useState<string[]>(
     festival?.member_ids || [],
   );
+  const [childMin, setChildMin] = useState(festival?.rates.child_min_age ?? 7);
+  const [childMax, setChildMax] = useState(festival?.rates.child_max_age ?? 10);
   const [rates, setRates] = useState({
     fixed: String((festival?.rates.fixed ?? 250000) / 100),
     adult: String((festival?.rates.adult ?? 120000) / 100),
@@ -74,6 +76,8 @@ export function FestivalForm({
         child: rupeesToPaise(rates.child),
         guest: rates.guest.trim() === "" ? null : rupeesToPaise(rates.guest),
         under_seven: 0,
+        child_min_age: childMin,
+        child_max_age: childMax,
         household_policy: householdPolicy,
         guest_age_policy: guestPolicy,
       };
@@ -245,12 +249,12 @@ export function FestivalForm({
                   {
                     key: "adult" as const,
                     label: "Adult meal package / person",
-                    note: "Above 10 years · services selected in the meal calendar",
+                    note: `Above ${childMax} years · services selected in the meal calendar`,
                   },
                   {
                     key: "child" as const,
                     label: "Child meal package / person",
-                    note: "Ages 7–10, inclusive",
+                    note: `Ages ${childMin}–${childMax}, inclusive`,
                   },
                   {
                     key: "guest" as const,
@@ -279,7 +283,7 @@ export function FestivalForm({
               <div className="included-note">
                 <Check size={17} />
                 <div>
-                  <strong>Children under seven: ₹0</strong>
+                  <strong>Children under {childMin}: ₹0</strong>
                   <span>
                     Free contribution; still included in attendance and catering
                     counts.
@@ -331,11 +335,38 @@ export function FestivalForm({
                       Same guest rate for all ages
                     </option>
                     <option value="under_seven_free">
-                      Under-seven guests are free
+                      Guests below {childMin} are free
                     </option>
                   </select>
                 </label>
               </div>
+              <div className="form-grid">
+                <label>
+                  Child package: minimum age
+                  <input
+                    type="number"
+                    min="0"
+                    max="17"
+                    value={childMin}
+                    onChange={(e) => setChildMin(Number(e.target.value))}
+                  />
+                </label>
+                <label>
+                  Child package: maximum age
+                  <input
+                    type="number"
+                    min={childMin}
+                    max="17"
+                    value={childMax}
+                    onChange={(e) => setChildMax(Number(e.target.value))}
+                  />
+                </label>
+              </div>
+              <p className="small muted">
+                Ages {childMin}–{childMax} use the child package rate; below{" "}
+                {childMin} is free; above {childMax} uses the adult rate. Set
+                these before registering attendees.
+              </p>
               <p className="small muted">
                 After saving the festival, add named meals and configure their
                 daily coverage in the Meal coverage by day section below. No day

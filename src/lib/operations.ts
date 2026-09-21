@@ -95,6 +95,7 @@ export const schemas = {
     category: z.literal("Guest meals"),
     service_id: z.uuid(),
     guest_id: z.uuid().nullable(),
+    package_id: z.uuid().nullable().optional(),
     adults: count.default(0),
     children: count.default(0),
     under_seven: count.default(0),
@@ -142,7 +143,18 @@ export const schemas = {
   }),
 };
 export type Operation = keyof typeof schemas;
+export type GuestPackage = {
+  id: string;
+  festival_id: string;
+  name: string;
+  service_date: string;
+  price: number;
+  service_ids: string[];
+  active: boolean;
+  version: number;
+};
 export type Service = {
+  guest_available?: boolean;
   id: string;
   festival_id: string;
   service_date: string;
@@ -173,6 +185,8 @@ export type Allocation = {
   version: number;
 };
 export type OperationsData = {
+  age_brackets?: { child_min_age: number; child_max_age: number };
+  guest_packages?: GuestPackage[];
   rsvps: {
     enrollment_id: string;
     service_date: string;
@@ -231,6 +245,11 @@ export type Enrollment = {
   eligible: boolean;
 };
 export type Guest = {
+  package_id?: string | null;
+  package_name?: string | null;
+  unit_price?: number | null;
+  included_services?: string[] | null;
+  checkins?: { service_id: string; attended: number }[];
   payment_status?: "none" | "pending" | "confirmed" | "payee_due";
   id: string;
   pass_code: string;

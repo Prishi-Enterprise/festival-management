@@ -338,9 +338,16 @@ export function FlatPaymentForm({
                           )
                         }
                       >
-                        <option value="adult">Above 10</option>
-                        <option value="child">7–10 years</option>
-                        <option value="under_seven">Under seven</option>
+                        <option value="adult">
+                          Above {d.age_brackets?.child_max_age ?? 10}
+                        </option>
+                        <option value="child">
+                          {d.age_brackets?.child_min_age ?? 7}–
+                          {d.age_brackets?.child_max_age ?? 10} years
+                        </option>
+                        <option value="under_seven">
+                          Under {d.age_brackets?.child_min_age ?? 7}
+                        </option>
                       </select>
                     </label>
                     <button

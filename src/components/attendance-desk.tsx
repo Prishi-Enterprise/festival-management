@@ -19,7 +19,9 @@ export function AttendanceDesk({
   data: OperationsData;
   member: Member;
 }) {
-  const services = d.services.filter((s) => s.coverage !== "not_served");
+  const services = d.services.filter(
+    (s) => s.coverage !== "not_served" || s.guest_available,
+  );
   const params = useSearchParams();
   const selected = services.some((s) => s.id === params.get("service"))
     ? params.get("service")!
@@ -42,7 +44,22 @@ export function AttendanceDesk({
     return f ? `${f.block}–${f.flat_number}` : "";
   };
   const rows = d.attendance.filter((a) => a.service_id === selected);
-  const guests = d.guests.filter((g) => g.service_id === selected);
+  const guests = d.guests
+    .filter((g) =>
+      g.included_services
+        ? g.included_services.includes(selected)
+        : g.service_id === selected,
+    )
+    .map((g) =>
+      g.package_id
+        ? {
+            ...g,
+            service_id: selected,
+            attended:
+              g.checkins?.find((c) => c.service_id === selected)?.attended ?? 0,
+          }
+        : g,
+    );
   const residents = rows.filter((a) =>
     d.enrollments.some((e) => e.id === a.id),
   );
@@ -72,19 +89,19 @@ export function AttendanceDesk({
     },
     {
       name: "adults",
-      label: "Guests above 10",
+      label: `Guests above ${d.age_brackets?.child_max_age ?? 10}`,
       type: "number",
       required: true,
     },
     {
       name: "children",
-      label: "Guests aged 7–10",
+      label: `Guests aged ${d.age_brackets?.child_min_age ?? 7}–${d.age_brackets?.child_max_age ?? 10}`,
       type: "number",
       required: true,
     },
     {
       name: "under_seven",
-      label: "Guests under seven",
+      label: `Guests under ${d.age_brackets?.child_min_age ?? 7}`,
       type: "number",
       required: true,
     },

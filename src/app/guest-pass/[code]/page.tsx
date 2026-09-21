@@ -26,12 +26,27 @@ export default async function Page({
       <section className="panel">
         <h1>{p.festival} · Guest pass</h1>
         <h2>
-          {p.date} · {p.meal}
+          {p.package_name ?? p.meal} · {p.date}
         </h2>
-        <p>
-          {p.count} guests · {p.attended} admitted ·{" "}
-          {p.cancelled ? 0 : Math.max(0, p.count - p.attended)} remaining
-        </p>
+        <p>{p.count} guests</p>
+        {p.meals?.length ? (
+          <ul>
+            {p.meals.map(
+              (meal: { meal: string; date: string; attended: number }) => (
+                <li key={meal.meal}>
+                  {meal.meal}: {meal.attended} admitted ·{" "}
+                  {p.cancelled ? 0 : Math.max(0, p.count - meal.attended)}{" "}
+                  remaining
+                </li>
+              ),
+            )}
+          </ul>
+        ) : (
+          <p>
+            {p.meal}: {p.attended} admitted ·{" "}
+            {p.cancelled ? 0 : Math.max(0, p.count - p.attended)} remaining
+          </p>
+        )}
         <p>
           <strong>
             {p.cancelled
@@ -41,8 +56,9 @@ export default async function Page({
         </p>
         <p>Pass code: {p.code}</p>
         <p>
-          This pass is valid only for the meal above. Admission is recorded by
-          the committee; sharing it does not increase its guest allowance.
+          This pass is valid only for the date and meals above. Each meal has
+          its own guest allowance. Admission is recorded by the committee;
+          sharing it does not increase its guest allowance.
         </p>
         <PrintButton />
       </section>

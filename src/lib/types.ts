@@ -31,6 +31,8 @@ export type Day = {
   label: string;
 };
 export type Rates = {
+  child_min_age?: number;
+  child_max_age?: number;
   fixed: number;
   adult: number;
   child: number;
