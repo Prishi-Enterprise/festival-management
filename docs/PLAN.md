@@ -16,7 +16,7 @@ This delivery contains the plan, technical design and workbook analysis. Buildin
 - Google sign-in through Supabase Auth, restricted to Google accounts previously onboarded/invited by an admin.
 - The only initial admin is `shivamastha@gmail.com`. Admins can assign additional admins and manage committee membership.
 - Admins configure festival days, blocks/flats and charges on the festival page. Rates remain in the database and ordinary committee members cannot edit them. This latest requirement supersedes the earlier database-only rate-management preference.
-- Committee members can register inflow/expenses and edit their own entries only. General overview is available to committee members; detailed financial reports are admin-only.
+- Committee members can register inflow/expenses and edit their own entries until an admin confirms and locks each entry. Only an admin can unlock it for correction; it then requires confirmation again. General overview is available to committee members; detailed financial reports are admin-only.
 - Under-seven meal contribution is ₹0. These children still count as people attending.
 - Domain details will be supplied later. Use an existing-domain subdomain rather than buying another domain.
 - Historical workbook rates describe 2025 and do not override the rules below.
@@ -62,7 +62,11 @@ Illustrative calculation: one flat + two adults + one child aged 8 + one child a
 
 **User management:** onboard/invite an exact Google email, assign it to festivals, see invited/active/deactivated status, revoke access, and promote an existing onboarded account to admin. The first admin is `shivamastha@gmail.com`; additional admin accounts exist only after an explicit admin action. Prevent removal/demotion of the last active admin.
 
-Committee members have a **My entries** page for their inflow and expenses. Ownership is the authenticated creator and cannot be reassigned by editing a request. Draft edits update the draft; edits to posted amounts, payment methods or accounts create linked reversal/replacement entries in one transaction while preserving the original history. Admins may correct any entry with a reason. Closed festivals require admin reopening before financial edits.
+Committee members have a **My entries** page for their inflow and expenses. Ownership is the authenticated creator and cannot be reassigned by editing a request. Entries remain editable by their creator while **Awaiting confirmation**. An admin reviews the entry and uses **Confirm and lock**, making that revision confirmed and read-only. Members can still view their own locked entries but cannot edit or delete them. Only an admin can **Unlock for correction**, with a reason; the entry returns to Awaiting confirmation and the creator can edit it again. Reconfirmation is required after unlocking, even if no edit was made. Admin-created entries use the same explicit confirmation action.
+
+Draft edits update the draft; edits to posted amounts, payment methods or accounts create linked reversal/replacement entries in one transaction while preserving the original history. The admin lock applies to both edit paths and associated financial attachments/allocations. Admins also unlock before correcting an entry. Closed festivals require admin reopening first; reopening a festival does not automatically unlock its entries.
+
+Admin finance screens include an Awaiting confirmation filter and a per-entry review action. My entries shows the status, confirmation time and confirming admin. Operational balances continue to reflect all posted, payment-verified entries, with pending-admin-review totals clearly identified; confirmation itself never posts money again. Final closing reports require all included inflow/expense entries to be confirmed and locked.
 
 General overview shows aggregate collection, expense, cash/online totals and relevant meal/event totals, without other members' transaction rows, named-holder balances, receipt images, payer details or private references. Detailed ledgers, holder reconciliation and detailed financial exports require admin access. Members may view their own entry details and supporting evidence. Hiding a page link is not sufficient authorization.
 
@@ -85,11 +89,11 @@ Deferred: resident logins, payment gateway, automatic bank/UPI verification, Wha
 3. At the configured cutoff, freeze a numbered dinner-list revision and send/export its totals for catering. Committee overrides after cutoff require a reason and create a new revision/delta.
 4. Check in diners by flat/count. Count guests, children and complimentary attendees explicitly; record excess walk-ins with a reason.
 5. Record catering quantities and invoices, supplier payments, cash handovers and bank transfers.
-6. Admin reconciles each holder/account and reviews unpaid bills, flat dues, unallocated receipts and attendance differences. Members can correct their own entries and view the general overview.
+6. Admin reconciles each holder/account, reviews unpaid bills, flat dues, unallocated receipts and attendance differences, and confirms/locks reviewed inflow and expense entries. Members can correct their own unlocked entries and view the general overview.
 
 ### Closing the festival
 
-Reconcile collections and holders, approve vendor bills/credits and outstanding liabilities, resolve exceptions, then generate a numbered closing report. Lock the festival against further financial posting. An admin can reopen with a recorded reason, producing a new report revision; retain old reports for comparison.
+Reconcile collections and holders, approve vendor bills/credits and outstanding liabilities, resolve exceptions, and confirm/lock all included inflow/expense entries before generating a numbered closing report. Lock the festival against further financial posting. An admin can reopen with a recorded reason, producing a new report revision; retain old reports for comparison. Individual entries remain locked until explicitly unlocked by an admin.
 
 ## Money tracking in plain language
 

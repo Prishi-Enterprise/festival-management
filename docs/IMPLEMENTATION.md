@@ -68,12 +68,17 @@ Use `main` for approved changes and `codex/<feature>` branches for subsequent wo
 - Money: integer paise in Postgres `bigint`; serialize to decimal strings at API boundaries to avoid JavaScript precision loss. No floating-point arithmetic for money.
 - People/plates: nonnegative integers. Supply quantities such as litres: `numeric(12,3)` with explicit unit. Round supply quantity × paise rate once per line using a documented half-up policy.
 - Financial documents have draft and posted states. Posted rows are immutable; corrections use linked reversal/credit documents. Drafts can be edited with optimistic version checks.
+- Entry review is a separate state: `awaiting_confirmation` or `confirmed_locked`. Only an admin can confirm/lock or unlock. Committee ownership grants editing only while awaiting confirmation; journal posting or payment verification alone does not remove that right.
 - Use explicit unique constraints and same-society/festival composite foreign keys. Application filtering alone is insufficient.
 - Preserve Gujarati names/labels in UTF-8. Do not translate stored names on every render.
 
 ## 4. Logical schema
 
 All tables include identifiers and creation metadata. Mutable operational tables include `updated_at`, `updated_by`, and `version`. Financial documents include business date, status, source reference, posted timestamp/actor, and optional reversal link.
+
+Inflow/expense entry roots also store `review_state`, `confirmed_by`, `confirmed_at`, and `confirmed_version`. A confirmed entry must have all three confirmation fields and `confirmed_version = version`; an awaiting-confirmation entry has no active confirmation fields. Preserve past confirmations/unlocks in the audit history. Every financial correction revision and supporting attachment/line/allocation mutation checks the same stable entry root lock. The review state belongs to the whole entry, not just its current journal row.
+
+A lock preserves the confirmed entry's contents; it does not prevent a separate later receipt/payment from settling a confirmed charge/bill. Record that settlement as a new entry with its own review state and immutable link to the original. Derived outstanding balances may change without rewriting the confirmed bill. Editing the original amount, source account or existing allocation still requires unlocking the relevant entry.
 
 ### Society, flats, festival and pricing
 
@@ -213,7 +218,9 @@ Each financial RPC runs in one database transaction and accepts a request UUID p
 | `create_festival` / `configure_festival` | admin only; explicit days, blocks/flats, service mappings and immutable pricing versions |
 | `invite_member` / `claim_invitation` | admin invite; verified Google email claims it once; expiry and revocation enforced |
 | `set_member_role` / `deactivate_member` | admin only; serialized membership lock prevents loss of last active admin |
-| `edit_own_entry` | creator or admin only; server derives owner; expected version; atomic reversal/replacement for posted finance |
+| `edit_own_entry` | creator or admin only; awaiting-confirmation state and open festival required; expected version; atomic reversal/replacement for posted finance |
+| `confirm_and_lock_entry` | admin only; row lock and expected version; validate current entry, set confirmation metadata/state atomically; no duplicate journal posting |
+| `unlock_entry` | admin only; open festival, expected version and reason; clear active confirmation, retain audit history and require reconfirmation |
 | `post_flat_charges` | festival-flat, enrollment version, request ID; DB reads rates; unique source key avoids duplicate base/package charges |
 | `record_receipt` / `verify_receipt` | amount, method, destination, party, allocations; allocated sum cannot exceed verified receipt or charge balance |
 | `post_transfer` | wallets, amount, acknowledgment; distinct wallets, conserved aggregate balance and sufficient funds |
@@ -235,9 +242,13 @@ Return structured validation, authorization, stale-version and insufficient-bala
 
 ### Own-entry editing
 
-All inflow/expense records carry immutable `created_by = auth.uid()` assigned by the database. Committee updates require active society/festival membership and `created_by = auth.uid()`; admins can correct any entry with a reason. Creator, original festival and original source links cannot be reassigned by a payload. `WITH CHECK` policies enforce the resulting row as well as the original row.
+All inflow/expense records carry immutable `created_by = auth.uid()` assigned by the database. Committee updates require active society/festival membership, `created_by = auth.uid()`, `review_state = awaiting_confirmation`, and an open festival. Admins can correct any entry after explicitly unlocking it with a reason. Creator, original festival and original source links cannot be reassigned by a payload. `WITH CHECK` policies enforce the resulting row as well as the original row. Members cannot set/clear review state or confirmation fields, and locked entries reject edits, deletion, attachment replacement and linked financial mutations through every API/RPC path.
 
-Draft entries update in place with audit history. For posted entries, the Edit button calls one correction RPC that checks downstream dependencies, reverses the original, creates the replacement, reapplies valid allocations and posts its journal atomically. Preserve a stable user-facing entry ID and revision chain. Allow the creator to edit their own posted entries through this flow; do not quietly convert the requested permission into draft-only editing.
+While awaiting confirmation, draft entries update in place with audit history. For posted entries, the Edit button calls one correction RPC that checks downstream dependencies, reverses the original, creates the replacement, reapplies valid allocations and posts its journal atomically. Preserve a stable user-facing entry ID and revision chain. Allow the creator to edit their own unlocked posted entries through this flow; do not restrict them to draft-only editing or allow a replacement revision to bypass an admin lock.
+
+`confirm_and_lock_entry` and all edit/correction/attachment operations lock the same entry root before checking its current version/state. If confirmation wins a race, the edit fails as locked. If editing wins, confirmation with the stale version fails and the admin must review the updated entry. Confirmation records the exact reviewed version and confirming admin. Unlocking returns the entry to Awaiting confirmation, clears active confirmation metadata and increments the version without changing ledger balances. Reopening a festival leaves individual entry locks intact. All actions are audited; confirmation is never inferred merely from payment verification.
+
+Operational ledger balances include all posted, payment-verified records whether awaiting admin review or confirmed, and the overview separately identifies pending-review amounts/counts. Do not filter arbitrary journal lines by review state and present the result as reconciled cash. Final close/report generation rejects unconfirmed included inflow/expense entry roots; historical report snapshots remain immutable after later unlocking/reconfirmation.
 
 If an edit would change another member's payment/allocation, create insufficient cash, or affect a closed festival, return a specific dependency conflict and provide an admin correction path. No member gains access to another member's transaction details from that error. Admins resolve dependent changes and record a reason. Reversed revisions remain read-only. Receipt exports indicate corrected/voided receipt numbers and their replacement.
 
@@ -253,8 +264,8 @@ An admin can copy an invitation/login link after pre-onboarding an email. Automa
 
 | Role | Permissions |
 | --- | --- |
-| Admin | Create/configure festivals, days, flats and charges; invite/deactivate members and appoint admins; all entries, transfers, reconciliation, corrections and detailed reports |
-| Committee | Assigned festivals only; create inflow/expense, read/edit own entries, read general overview and permitted operational rosters; no other members' entry details/edits, detailed finance exports, role changes or pricing changes |
+| Admin | Create/configure festivals, days, flats and charges; invite/deactivate members and appoint admins; all entries, confirm/lock and unlock for correction, transfers, reconciliation and detailed reports |
+| Committee | Assigned festivals only; create inflow/expense, read own entries and edit them only until admin confirmation/lock, read general overview and permitted operational rosters; no lock/unlock, other members' entry details/edits, detailed finance exports, role changes or pricing changes |
 | Technical operator | Deployment/migrations/provider configuration; infrastructure identity, not an additional committee application role |
 
 Use exactly two application roles at launch: admin and committee. Meal/event coordinator and treasurer are workflow responsibilities, not extra authorization roles. Admin rights apply across the society's festivals; committee membership is assigned per festival. Serialize promote/demote/deactivate operations against the society membership set and prohibit removing the last active admin, including simultaneous requests. Record actor and before/after role. A member cannot promote themselves or alter `created_by`. Database membership, not client-supplied roles or editable user metadata, determines permissions.
@@ -326,7 +337,13 @@ For launch, import flat master and verified opening balances only. Historical Na
 | Uninvited/wrong Google account | No onboarding/membership; no data access |
 | Expired/revoked invite and deactivated member | Cannot claim or regain access; existing JWT cannot bypass membership checks |
 | Admin assigns second admin | New role has admin pages/reports; operation audited; last-admin guard holds |
-| Member edits own inflow/expense | Draft changes or atomic posted correction permitted and balanced |
+| Member edits own awaiting-confirmation inflow/expense | Draft changes or atomic posted correction permitted and balanced |
+| Admin confirms and locks an entry | Exact current revision confirmed; member cannot edit/delete it or mutate its attachments/financial children; no money posted twice |
+| Member attempts to self-confirm/unlock | Direct API/RPC/RLS rejects even with forged review metadata |
+| Admin unlocks for correction | Reason audited, prior confirmation retained in history, entry editable by creator and requires reconfirmation |
+| Concurrent edit and confirm | Entry-root locking/version checks prevent confirmation of an unseen edited revision |
+| Close with awaiting-confirmation entry | Closing rejected until included inflow/expense entries are confirmed and locked |
+| Reopen festival | Existing entry locks remain in force |
 | Member edits another's entry or spoofs creator | API/RPC/RLS rejects; original record unchanged |
 | Committee requests detailed export/signed attachment | Denied even with guessed URL/ID; general aggregate endpoint still works |
 | Unauthorized roles and another festival | Direct API, RPC, storage and report access denied |
