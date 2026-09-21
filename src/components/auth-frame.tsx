@@ -18,9 +18,6 @@ export function AuthFrame({ children }: { children: React.ReactNode }) {
             <br />
             and keep every detail in order.
           </p>
-          <div className="petals" aria-hidden="true">
-            ✳
-          </div>
         </div>
         <footer>
           Radhe Society <span>•</span> Together, every year.

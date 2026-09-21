@@ -1689,3 +1689,12 @@ td input:not([type="radio"]) {
 .back-navigation a:hover { background: #f7eed8; }
 .back-navigation a:focus-visible { outline: 3px solid #a77b1c; outline-offset: 2px; }
 @media print { .back-navigation { display: none; } }
+
+/* Keep the welcome banner compact without platform-dependent emoji artwork. */
+.hero-panel { min-height: 0; }
+.hero-panel > div { max-width: 680px; }
+.hero-panel .text-link { color: #dfbb65; }
+@media (max-width: 1100px) {
+  .hero-panel { padding: 24px; }
+  .hero-panel p { max-width: 100%; }
+}

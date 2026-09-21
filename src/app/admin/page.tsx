@@ -62,16 +62,6 @@ export default async function AdminHome() {
             Manage festivals <ArrowRight size={16} />
           </Link>
         </div>
-        <div className="hero-art" aria-hidden="true">
-          <div className="ring ring-one" />
-          <div className="ring ring-two" />
-          <span>✳</span>
-          <div className="art-caption">
-            OUR COMMUNITY
-            <br />
-            OUR CELEBRATION
-          </div>
-        </div>
       </section>
       <section className="stats-grid">
         {[
