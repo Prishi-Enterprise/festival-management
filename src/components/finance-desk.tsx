@@ -169,6 +169,15 @@ export function FinanceDesk(p: Props) {
                 <select
                   value={kind}
                   onChange={(e) => {
+                    if (
+                      e.target.value === "fixed_payment" ||
+                      e.target.value === "package_payment"
+                    ) {
+                      router.push(
+                        `/desk/${p.festivalId}/payments?purpose=${e.target.value === "fixed_payment" ? "fixed" : "package"}`,
+                      );
+                      return;
+                    }
                     setKind(e.target.value as EntryKind);
                     setCategory(
                       (
@@ -183,6 +192,16 @@ export function FinanceDesk(p: Props) {
                     );
                   }}
                 >
+                  {!editing && (
+                    <>
+                      <option value="fixed_payment">
+                        Fixed contribution (flat payment)
+                      </option>
+                      <option value="package_payment">
+                        Meal-package payment
+                      </option>
+                    </>
+                  )}
                   {kinds
                     .filter((k) => admin || !["opening", "charge"].includes(k))
                     .map((k) => (

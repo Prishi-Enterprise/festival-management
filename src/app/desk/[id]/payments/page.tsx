@@ -9,10 +9,10 @@ export default async function Page({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ entry?: string }>;
+  searchParams: Promise<{ entry?: string; purpose?: string }>;
 }) {
   const { id } = await params;
-  const { entry } = await searchParams;
+  const { entry, purpose } = await searchParams;
   if (!z.uuid().safeParse(id).success) notFound();
   const { supabase, member } = await requireMember();
   const [data, accounts, receipt] = await Promise.all([
@@ -34,7 +34,10 @@ export default async function Page({
   if (entry && !receipt.data) notFound();
   return (
     <FlatPaymentForm
-      key={entry ?? "new"}
+      key={entry ?? purpose ?? "new"}
+      initialPurpose={
+        purpose === "package" ? "Meal package" : "Fixed contribution"
+      }
       data={data.data as OperationsData}
       accounts={accounts.data as Account[]}
       entry={receipt.data as Entry | null}

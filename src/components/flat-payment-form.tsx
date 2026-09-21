@@ -10,10 +10,12 @@ export function FlatPaymentForm({
   data: d,
   accounts,
   entry,
+  initialPurpose = "Fixed contribution",
 }: {
   data: OperationsData;
   accounts: Account[];
   entry: Entry | null;
+  initialPurpose?: "Fixed contribution" | "Meal package";
 }) {
   const router = useRouter();
   const [pending, start] = useTransition();
@@ -21,7 +23,7 @@ export function FlatPaymentForm({
   const request = useRef<string | null>(null);
   const [flat, setFlat] = useState(entry?.flat_id ?? "");
   const [purpose, setPurpose] = useState<string>(
-    entry?.category ?? "Fixed contribution",
+    entry?.category ?? initialPurpose,
   );
   const [members, setMembers] = useState<Resident[]>([]);
   const [selected, setSelected] = useState<string[]>(
@@ -134,7 +136,7 @@ export function FlatPaymentForm({
                   name="amount"
                   type="number"
                   required
-                  min={fixed?"0.01":"0"}
+                  min={fixed ? "0.01" : "0"}
                   max="1000000"
                   step="0.01"
                   defaultValue={entry ? entry.amount / 100 : undefined}
