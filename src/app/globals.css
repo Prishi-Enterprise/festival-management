@@ -1378,10 +1378,39 @@ td input:not([type="radio"]) {
 }
 
 /* Radhe Infinity identity: gold, navy and warm white. */
-.brand-logo { width: 52px; height: auto; object-fit: contain; background: #fff; padding: 3px; border: 1px solid #bd902f50; border-radius: 5px; }
-.auth-story { background: #10152c; color: #fffefa; border-top: 5px solid #bd902f; }
-.auth-story .brand div > span, .auth-story .eyebrow, .auth-story footer { color: #dfbb65; }
-.auth-story p:not(.eyebrow) { color: #dddde4; }
-.auth-story .petals { color: #bd902f; opacity: .28; }
-.hero { border-top: 3px solid #bd902f; }
-.nav-link.active { border-left: 3px solid #bd902f; }
+.brand-logo {
+  width: 52px;
+  height: auto;
+  object-fit: contain;
+  background: #fff;
+  padding: 3px;
+  border: 1px solid #bd902f50;
+  border-radius: 5px;
+}
+.auth-story {
+  background: #10152c;
+  color: #fffefa;
+  border-top: 5px solid #bd902f;
+}
+.auth-story .brand div > span,
+.auth-story .eyebrow,
+.auth-story footer {
+  color: #dfbb65;
+}
+.auth-story p:not(.eyebrow) {
+  color: #dddde4;
+}
+.auth-story .petals {
+  color: #bd902f;
+  opacity: 0.28;
+}
+.hero {
+  border-top: 3px solid #bd902f;
+}
+.nav-link.active {
+  border-left: 3px solid #bd902f;
+}
+.hero-panel { background: #10152c; color: #fffefa; border-color: #bd902f; }
+.hero-panel .hero-tag, .hero-panel .hero-art { color: #dfbb65; }
+.hero-panel p { color: #dddde4; }
+.hero-panel .button { background: #dfbb65; color: #10152c; border-color: #dfbb65; }

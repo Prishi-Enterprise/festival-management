@@ -61,3 +61,13 @@ The public Git history includes the historical workbook analysis and financial c
 MCP connections were reported connected by the owner, but Supabase and Vercel tools are not exposed in the active task tool list. Browser dashboards were used for the resource checks and empty Vercel project/domain creation. Reloading the task may expose the newly connected tools.
 
 Sources: [Vercel manual deployment](https://vercel.com/docs/deployments), [Supabase branching](https://supabase.com/docs/guides/deployment/branching), [branching charges](https://supabase.com/docs/guides/platform/manage-your-usage/branching), [Vercel Git restrictions](https://vercel.com/docs/git), [Supabase/Vercel environment mapping](https://supabase.com/docs/guides/troubleshooting/vercel-integration-environment-variables-not-syncing-for-persistent-git-branches-b9191e).
+
+## Admin release — 21 September 2026
+
+The admin schema is applied to the hosted production project. Vercel Production has the Supabase URL, publishable key, app URL and `prod` label. No service-role key is used. The exact production callback is allowlisted and the Site URL is `https://radhe.prishi.in`.
+
+The owner authorized deploying admin setup before Google OAuth acceptance. Google client configuration and a real first-admin sign-in remain required before operational use. Local browser checks cover flat creation, festival draft/save, assignments and invitations; database tests cover authorization and last-admin protection. No local fixtures are copied to production.
+
+The security advisor flags seven authenticated SECURITY DEFINER RPCs. These are intentional: each enforces membership/admin authorization internally, uses a fixed empty search path, and denies direct table writes. The before-user-created hook is separately restricted to Supabase Auth.
+
+GitHub Actions is deferred because the connected CLI token lacks workflow scope. Vercel builds main automatically; run `npm run lint`, `npm run typecheck`, `npm test`, and `npm run build` before pushing.
