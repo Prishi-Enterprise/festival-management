@@ -81,13 +81,14 @@ export async function saveMealCalendar(input: unknown): Promise<Result> {
         .array(
           z.object({
             service_date: z.iso.date(),
-            meal: z.enum(["breakfast", "lunch", "dinner"]),
+            meal: z.string().trim().min(1).max(60),
             coverage: z.enum(["fixed", "package", "not_served"]),
             guest_rate: z.number().int().min(0).max(100000000).nullable(),
             version: z.number().int().min(0),
           }),
         )
-        .max(93),
+        .min(1)
+        .max(620),
     })
     .safeParse(input);
   if (!parsed.success)

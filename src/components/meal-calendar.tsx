@@ -7,7 +7,7 @@ import type { Day } from "@/lib/types";
 export type MealService = {
   id: string;
   service_date: string;
-  meal: "breakfast" | "lunch" | "dinner";
+  meal: string;
   coverage: "fixed" | "package" | "not_served";
   guest_rate: number | null;
   version: number;
@@ -26,9 +26,10 @@ export function MealCalendar({
   const router = useRouter();
   const [pending, start] = useTransition();
   const [notice, setNotice] = useState("");
+  const [newMeal, setNewMeal] = useState("");
   const [rows, setRows] = useState(() =>
     days.flatMap((d) =>
-      (["breakfast", "lunch", "dinner"] as const).map((meal) => {
+      [...new Set(services.map((s) => s.meal))].map((meal) => {
         const s = services.find(
           (s) => s.service_date === d.service_date && s.meal === meal,
         );
@@ -49,10 +50,10 @@ export function MealCalendar({
     <section className="panel finance-register" id="meal-calendar">
       <h2>Meal coverage by day</h2>
       <p className="muted">
-        Choose fixed contribution or per-person package for each service. To
-        include both lunch and dinner, set both rows. Package prices apply once
-        per person across all selected services; children use the child package
-        rate. Guest prices are separate per meal.
+        Add the meals offered at this festival, then choose fixed contribution,
+        per-person package or not served for each meal on each day. Package
+        prices apply once per person across all selected services; children use
+        the child package rate. Guest prices are separate per meal.
       </p>
       <p className="small muted">
         Save festival dates first. Once a meal calendar is saved, its dates must
@@ -87,6 +88,81 @@ export function MealCalendar({
         }}
       >
         <fieldset disabled={pending} style={{ border: 0, padding: 0 }}>
+          <div className="meal-type-editor">
+            <label>
+              Meal name
+              <input
+                value={newMeal}
+                maxLength={60}
+                placeholder="e.g. Breakfast, Dinner, Prasad"
+                onChange={(e) => setNewMeal(e.target.value)}
+              />
+            </label>
+            <button
+              className="button secondary"
+              type="button"
+              onClick={() => {
+                const meal = newMeal.trim();
+                if (!meal) {
+                  setNotice("Enter a meal name.");
+                  return;
+                }
+                if (
+                  rows.some((r) => r.meal.toLowerCase() === meal.toLowerCase())
+                ) {
+                  setNotice("A meal with this name already exists.");
+                  return;
+                }
+                if (new Set(rows.map((r) => r.meal)).size >= 20) {
+                  setNotice("A festival can have up to 20 meals.");
+                  return;
+                }
+                setRows(
+                  [
+                    ...rows,
+                    ...days.map((d) => ({
+                      service_date: d.service_date,
+                      meal,
+                      coverage: "not_served" as const,
+                      guest:
+                        defaultGuest == null ? "" : String(defaultGuest / 100),
+                      version: 0,
+                    })),
+                  ].sort((a, b) =>
+                    a.service_date.localeCompare(b.service_date),
+                  ),
+                );
+                setNewMeal("");
+                setNotice("");
+              }}
+            >
+              Add meal
+            </button>
+          </div>
+          <div className="meal-type-list">
+            {[...new Set(rows.map((r) => r.meal))].map((meal) => (
+              <span key={meal}>
+                {meal}
+                {!services.some((s) => s.meal === meal) && (
+                  <button
+                    type="button"
+                    className="text-button"
+                    aria-label={`Remove ${meal}`}
+                    onClick={() => setRows(rows.filter((r) => r.meal !== meal))}
+                  >
+                    Remove
+                  </button>
+                )}
+              </span>
+            ))}
+          </div>
+          <p className="small muted">
+            Saved meals stay linked to their records. Set a meal to Not served
+            on days when it is unavailable.
+          </p>
+          {rows.length === 0 && (
+            <p>Add a meal to configure its daily coverage.</p>
+          )}
           <div className="table-scroll">
             <table>
               <thead>
@@ -155,36 +231,12 @@ export function MealCalendar({
             </table>
           </div>
           <div className="entry-actions">
-            <button className="button" style={{ marginTop: 20 }}>
-              Save meal calendar
-            </button>
             <button
-              className="button secondary"
-              type="button"
+              className="button"
+              disabled={rows.length === 0}
               style={{ marginTop: 20 }}
-              onClick={() =>
-                setRows(
-                  rows.map((r) => {
-                    const d = days.find(
-                      (d) => d.service_date === r.service_date,
-                    )!;
-                    return {
-                      ...r,
-                      coverage:
-                        r.meal === "breakfast" ||
-                        (d.day_number === 1 && r.meal === "dinner")
-                          ? "fixed"
-                          : r.meal === "dinner" &&
-                              d.day_number >= 2 &&
-                              d.day_number <= 9
-                            ? "package"
-                            : "not_served",
-                    };
-                  }),
-                )
-              }
             >
-              Fill breakfast + dinner defaults
+              Save meal calendar
             </button>
           </div>
         </fieldset>

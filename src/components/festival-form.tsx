@@ -337,8 +337,8 @@ export function FestivalForm({
                 </label>
               </div>
               <p className="small muted">
-                After saving the festival, configure each day’s breakfast, lunch
-                and dinner in the Meal coverage by day section below. No day
+                After saving the festival, add named meals and configure their
+                daily coverage in the Meal coverage by day section below. No day
                 range is hardcoded.
               </p>
             </section>

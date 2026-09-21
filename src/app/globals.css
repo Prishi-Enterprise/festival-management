@@ -1846,3 +1846,15 @@ input::-webkit-datetime-edit { min-width: 0; padding: 0; }
   flex-wrap: wrap;
   align-items: center;
 }
+
+.meal-type-editor {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.meal-type-editor label { flex: 1 1 240px; margin: 0; }
+.meal-type-list { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+.meal-type-list > span { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border: 1px solid var(--line); border-radius: 8px; overflow-wrap: anywhere; }
+@media (max-width: 480px) { .meal-type-editor > button { width: 100%; } }
