@@ -93,17 +93,32 @@
   z-index: 1;
 }
 .landing .logo-frame {
-  width: 172px;
+  width: fit-content;
+  max-width: 100%;
   margin: 0 auto 31px;
-  background: white;
-  padding: 9px;
-  border: 1px solid #bd902f35;
-  box-shadow: 0 8px 25px #10152c08;
 }
-.landing .logo-frame img {
+.landing .logo-frame .brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+.landing .logo-frame .brand-logo {
   display: block;
-  width: 100%;
-  height: auto;
+  width: 88px;
+  height: 88px;
+  flex-shrink: 0;
+}
+.landing .logo-frame .brand strong {
+  display: block;
+  font-size: 28px;
+  white-space: nowrap;
+}
+.landing .logo-frame .brand div > span {
+  display: block;
+  margin-top: 6px;
+  font-size: 10px;
+  letter-spacing: 0.22em;
 }
 .landing .eyebrow {
   display: flex;
@@ -224,7 +239,6 @@
     padding: 36px 20px 40px;
   }
   .landing .logo-frame {
-    width: 146px;
     margin-bottom: 26px;
   }
   .landing .eyebrow {
