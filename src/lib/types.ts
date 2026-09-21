@@ -41,7 +41,12 @@ export type Rates = {
   household_policy: "unconfirmed" | "all_residents";
   guest_age_policy: "unconfirmed" | "same_rate" | "under_seven_free";
 };
-export type Flat = { id: string; block: string; flat_number: string };
+export type Flat = {
+  id: string;
+  block: string;
+  flat_number: string;
+  active?: boolean;
+};
 export type FestivalDetail = Festival & {
   days: Day[];
   rates: Rates;

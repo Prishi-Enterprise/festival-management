@@ -134,3 +134,12 @@ export async function manageMeal(input: unknown): Promise<Result> {
     p_name: parsed.data.name,
   });
 }
+
+export async function deactivateFlats(ids: unknown): Promise<Result> {
+  const parsed = z.array(z.uuid()).min(1).max(2000).safeParse(ids);
+  if (!parsed.success)
+    return { ok: false, error: "Choose flats to deactivate." };
+  const result = await perform("deactivate_flats", { p_ids: parsed.data });
+  if (result.ok) revalidatePath("/desk", "layout");
+  return result;
+}

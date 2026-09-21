@@ -3,10 +3,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { OperationForm, type Field } from "./operation-form";
-import {
-  type GuestDue,
-  type OperationsData,
-} from "@/lib/operations";
+import { type GuestDue, type OperationsData } from "@/lib/operations";
 import { inr, type Account, type Entry, type Vendor } from "@/lib/finance";
 export function GuestPaymentForm({
   data: d,
@@ -59,7 +56,11 @@ export function GuestPaymentForm({
             label: "Host flat",
             type: "select" as const,
             options: d.flats
-              .filter((f) => !entry || f.id === entry.flat_id)
+              .filter(
+                (f) =>
+                  (f.active !== false || f.id === entry?.flat_id) &&
+                  (!entry || f.id === entry.flat_id),
+              )
               .map((f) => ({ value: f.id, label: label(f.id) })),
           },
           {

@@ -819,6 +819,8 @@ small {
 }
 .block-chip {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: 15px;
   border: 1px solid var(--line);
   border-radius: 7px;

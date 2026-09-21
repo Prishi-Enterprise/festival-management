@@ -457,13 +457,29 @@ export function FestivalForm({
                   className="button secondary small-button"
                   onClick={() =>
                     setFlatIds(
-                      flatIds.length === flats.length
-                        ? []
-                        : flats.map((f) => f.id),
+                      flats
+                        .filter((f) => f.active !== false)
+                        .every((f) => flatIds.includes(f.id))
+                        ? flats
+                            .filter(
+                              (f) =>
+                                f.active === false && flatIds.includes(f.id),
+                            )
+                            .map((f) => f.id)
+                        : [
+                            ...new Set([
+                              ...flatIds,
+                              ...flats
+                                .filter((f) => f.active !== false)
+                                .map((f) => f.id),
+                            ]),
+                          ],
                     )
                   }
                 >
-                  {flatIds.length === flats.length && flats.length
+                  {flats
+                    .filter((f) => f.active !== false)
+                    .every((f) => flatIds.includes(f.id)) && flats.length
                     ? "Clear selection"
                     : "Select all"}
                 </button>
@@ -473,7 +489,11 @@ export function FestivalForm({
                   <h3>Block {block}</h3>
                   <div className="flat-grid">
                     {flats
-                      .filter((f) => f.block === block)
+                      .filter(
+                        (f) =>
+                          f.block === block &&
+                          (f.active !== false || flatIds.includes(f.id)),
+                      )
                       .map((f) => (
                         <label
                           className={`choice-chip ${flatIds.includes(f.id) ? "checked" : ""}`}
@@ -482,9 +502,11 @@ export function FestivalForm({
                           <input
                             type="checkbox"
                             checked={flatIds.includes(f.id)}
+                            disabled={f.active === false}
                             onChange={() => setFlatIds(toggle(flatIds, f.id))}
                           />
                           {f.flat_number}
+                          {f.active === false ? " · Inactive" : ""}
                         </label>
                       ))}
                   </div>

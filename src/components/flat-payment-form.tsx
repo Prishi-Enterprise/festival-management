@@ -166,11 +166,16 @@ export function FlatPaymentForm({
                   }}
                 >
                   <option value="">Choose flat</option>
-                  {d.flats.map((f) => (
-                    <option key={f.id} value={f.id}>
-                      {f.block}–{f.flat_number}
-                    </option>
-                  ))}
+                  {d.flats
+                    .filter(
+                      (f) => f.active !== false || f.id === entry?.flat_id,
+                    )
+                    .map((f) => (
+                      <option key={f.id} value={f.id}>
+                        {f.block}–{f.flat_number}
+                        {f.active === false ? " · Inactive" : ""}
+                      </option>
+                    ))}
                 </select>
               </label>
               <label>

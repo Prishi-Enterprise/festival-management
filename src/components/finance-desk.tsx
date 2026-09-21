@@ -240,11 +240,15 @@ export function FinanceDesk(p: Props) {
                     defaultValue={editing?.flat_id ?? ""}
                   >
                     <option value="">Choose a flat</option>
-                    {p.flats.map((f) => (
-                      <option key={f.id} value={f.id}>
-                        {f.block}–{f.flat_number}
-                      </option>
-                    ))}
+                    {p.flats
+                      .filter(
+                        (f) => f.active !== false || f.id === editing?.flat_id,
+                      )
+                      .map((f) => (
+                        <option key={f.id} value={f.id}>
+                          {f.block}–{f.flat_number}
+                        </option>
+                      ))}
                   </select>
                 </label>
               )}

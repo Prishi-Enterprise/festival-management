@@ -1,6 +1,7 @@
 "use client";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { Trash2 } from "lucide-react";
 import { saveMealCalendar, manageMeal } from "@/app/admin/actions";
 import { rupeesToPaise } from "@/lib/validation";
 import type { Day } from "@/lib/types";
@@ -151,9 +152,10 @@ export function MealCalendar({
                     type="button"
                     className="text-button"
                     aria-label={`Remove ${meal}`}
+                    title={`Remove ${meal}`}
                     onClick={() => setRows(rows.filter((r) => r.meal !== meal))}
                   >
-                    Remove
+                    <Trash2 size={18} aria-hidden="true" />
                   </button>
                 )}
               </span>
@@ -317,6 +319,8 @@ function MealControls({
           type="button"
           className="button secondary"
           disabled={pending}
+          aria-label={`Remove ${meal}`}
+          title={`Remove ${meal}`}
           onClick={() => {
             if (
               window.confirm(
@@ -326,7 +330,7 @@ function MealControls({
               run(null);
           }}
         >
-          Remove meal
+          <Trash2 size={18} aria-hidden="true" />
         </button>
       </div>
       {message && (
