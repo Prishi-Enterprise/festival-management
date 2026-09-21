@@ -6,6 +6,7 @@ const links = [
   { href: "/admin", label: "Overview", icon: LayoutDashboard },
   { href: "/admin/festivals", label: "Festivals", icon: CalendarDays },
   { href: "/admin/users", label: "People & access", icon: UsersRound },
+  { href: "/desk", label: "Festival desk", icon: LayoutDashboard },
 ];
 export function Nav() {
   const path = usePathname();

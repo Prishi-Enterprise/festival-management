@@ -70,3 +70,28 @@ export async function updateMember(input: unknown): Promise<Result> {
   if (!parsed.success) return { ok: false, error: "Invalid member settings." };
   return perform("update_member", { p_input: parsed.data });
 }
+
+export async function saveMealCalendar(input: unknown): Promise<Result> {
+  const parsed = z
+    .object({
+      festival_id: z.uuid(),
+      services: z
+        .array(
+          z.object({
+            service_date: z.iso.date(),
+            meal: z.enum(["breakfast", "lunch", "dinner"]),
+            coverage: z.enum(["fixed", "package", "not_served"]),
+            guest_rate: z.number().int().min(0).max(100000000).nullable(),
+            version: z.number().int().min(0),
+          }),
+        )
+        .max(93),
+    })
+    .safeParse(input);
+  if (!parsed.success)
+    return { ok: false, error: "Check the meal calendar and guest prices." };
+  return perform("save_meal_calendar", {
+    p_festival: parsed.data.festival_id,
+    p_services: parsed.data.services,
+  });
+}

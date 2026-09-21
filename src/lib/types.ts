@@ -27,7 +27,6 @@ export type Day = {
   day_number: number;
   service_date: string;
   label: string;
-  is_dussehra: boolean;
 };
 export type Rates = {
   fixed: number;

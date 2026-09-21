@@ -32,4 +32,8 @@ Run local Supabase with the committed templates and confirmation settings. Email
 
 Custom SMTP and both OTP templates are saved. A real email from Radhe Festival arrived in the initial admin Gmail inbox, and its eight-digit code successfully opened the production admin dashboard with one active member and no pending invitation. Google remains coming soon.
 
-A six-digit update is prepared locally at the owner’s request for shorter codes. Supabase supports 6–10 digits, so four digits cannot be configured. Production remains at eight digits until the app deployment and provider setting are switched together. Preserve the 600-second expiry and 60-second resend interval. Code reuse rejection was verified locally.
+The approved six-digit update is deployed and the Supabase provider is configured for six digits. Supabase supports 6–10 digits, so four digits cannot be configured. Preserve the 600-second expiry and 60-second resend interval. Code reuse rejection was verified locally.
+
+## Final-launch identity handover
+
+The owner designated `sb@prishi.in` as the official production admin. `prishi.ai.ventures@gmail.com` and `shivamastha@gmail.com` are personal addresses. Keep current development access until final launch. Before committee launch, invite the official address as admin, verify its OTP delivery and admin access, then remove administrative access from personal accounts as part of the handover. Do not demote the last active admin or rewrite applied bootstrap migrations. The application currently uses the admin role, not a distinct superadmin permission tier.

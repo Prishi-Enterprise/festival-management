@@ -230,7 +230,7 @@ export function FestivalForm({
                   <h2>Contributions</h2>
                   <p className="small muted">
                     Amounts in rupees. Package contributions are for the whole
-                    dinner package.
+                    meal package.
                   </p>
                 </div>
                 <span className="section-number">02</span>
@@ -244,12 +244,12 @@ export function FestivalForm({
                   },
                   {
                     key: "adult" as const,
-                    label: "Adult dinner package / person",
-                    note: "Above 10 years · dinners on days 2–9",
+                    label: "Adult meal package / person",
+                    note: "Above 10 years · services selected in the meal calendar",
                   },
                   {
                     key: "child" as const,
-                    label: "Child dinner package / person",
+                    label: "Child meal package / person",
                     note: "Ages 7–10, inclusive",
                   },
                   {
@@ -337,10 +337,9 @@ export function FestivalForm({
                 </label>
               </div>
               <p className="small muted">
-                Included meals: daily breakfast, first-day dinner, and Dussehra
-                lunch and dinner. Meal-service bookings and individual
-                day/service guest-rate overrides will be added in the meals
-                phase.
+                After saving the festival, configure each day’s breakfast, lunch
+                and dinner in the Meal coverage by day section below. No day
+                range is hardcoded.
               </p>
             </section>
           </>
@@ -351,8 +350,7 @@ export function FestivalForm({
               <div>
                 <h2>{count} days of celebration</h2>
                 <p className="small muted">
-                  Set dates, day names and the Dussehra day. Dates must stay in
-                  order.
+                  Set dates and day names. Dates must stay in order.
                 </p>
               </div>
               <CalendarDays size={22} />
@@ -364,7 +362,6 @@ export function FestivalForm({
                     <th>Day</th>
                     <th>Date</th>
                     <th>Day name</th>
-                    <th>Dussehra</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -403,22 +400,6 @@ export function FestivalForm({
                                   ? { ...d, label: e.target.value }
                                   : d,
                               ),
-                            )
-                          }
-                        />
-                      </td>
-                      <td>
-                        <input
-                          type="radio"
-                          name="dussehra"
-                          aria-label={`Dussehra on day ${day.day_number}`}
-                          checked={day.is_dussehra}
-                          onChange={() =>
-                            setDays(
-                              days.map((d, i) => ({
-                                ...d,
-                                is_dussehra: i === index,
-                              })),
                             )
                           }
                         />

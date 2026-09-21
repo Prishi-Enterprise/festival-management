@@ -180,8 +180,8 @@ export default async function AdminHome() {
         </section>
       </div>
       <p className="footnote">
-        <ShieldCheck size={15} /> You’re in the admin workspace. Financial
-        entries and reports will follow in the next phase.
+        <ShieldCheck size={15} /> Open the Festival desk for collections,
+        expense bills, confirmation and reports.
       </p>
     </>
   );

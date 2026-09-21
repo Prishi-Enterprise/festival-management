@@ -1,5 +1,6 @@
 # Hosting and environment setup
 
+> **Current release status:** See [OPERATIONS.md](OPERATIONS.md) for implemented finance and configurable meal coverage, remaining work and the final-launch handover to `sb@prishi.in`. Email OTP is active; there is no special Dussehra flag. Earlier planned defaults below are historical, not hardcoded meal coverage.
 Updated 21 September 2026. These decisions supersede earlier hosting and separate-project assumptions in the planning documents.
 
 ## Confirmed resources

@@ -18,7 +18,6 @@ export const daySchema = z.object({
   day_number: z.number().int().min(1).max(31),
   service_date: z.iso.date(),
   label: z.string().trim().min(1).max(60),
-  is_dussehra: z.boolean(),
 });
 export const festivalSchema = z
   .object({
@@ -52,19 +51,14 @@ export const festivalSchema = z
       error("Festival days must be numbered and dated in order.");
     if (value.days[0]?.service_date !== value.start_date)
       error("The first day must match the start date.");
-    if (value.days.filter((d) => d.is_dussehra).length > 1)
-      error("Choose only one Dussehra day.");
     if (
       value.status === "ready" &&
       (value.rates.guest === null ||
         value.rates.household_policy === "unconfirmed" ||
         value.rates.guest_age_policy === "unconfirmed" ||
-        !value.flat_ids.length ||
-        !value.days.some((d) => d.is_dussehra))
+        !value.flat_ids.length)
     )
-      error(
-        "To mark setup ready, choose flats, Dussehra, guest rate and meal policies.",
-      );
+      error("To mark setup ready, choose flats, guest rate and meal policies.");
   });
 export const blockSchema = z.object({
   block: z
@@ -103,6 +97,5 @@ export function makeDays(
       .toISOString()
       .slice(0, 10),
     label: `Day ${i + 1}`,
-    is_dussehra: i === count - 1,
   }));
 }

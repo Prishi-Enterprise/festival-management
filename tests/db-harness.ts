@@ -78,13 +78,11 @@ export function draft() {
         day_number: 1,
         service_date: "2026-10-11",
         label: "First day",
-        is_dussehra: false,
       },
       {
         day_number: 2,
         service_date: "2026-10-12",
-        label: "Dussehra",
-        is_dussehra: true,
+        label: "Final day",
       },
     ],
     rates: {
