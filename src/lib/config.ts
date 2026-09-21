@@ -12,7 +12,15 @@ export function publicConfig() {
   return { url, key };
 }
 export function appUrl() {
-  const url = new URL(process.env.APP_URL || "http://localhost:3000");
+  const previewHost =
+    process.env.VERCEL_ENV === "preview"
+      ? process.env.VERCEL_BRANCH_URL || process.env.VERCEL_URL
+      : undefined;
+  const url = new URL(
+    previewHost
+      ? `https://${previewHost}`
+      : process.env.APP_URL || "http://localhost:3000",
+  );
   if (
     url.protocol !== "https:" &&
     !["localhost", "127.0.0.1"].includes(url.hostname)

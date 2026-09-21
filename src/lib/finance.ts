@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { financeCategories } from "./categories";
 export const kinds = [
   "collection",
   "donation",
@@ -17,24 +18,33 @@ export const kindLabels: Record<EntryKind, string> = {
   payment: "Supplier payment / advance",
   transfer: "Holder transfer",
   opening: "Opening funds",
-  charge: "Flat charge",
+  charge: "Manual amount due",
   refund: "Flat refund",
 };
-export const entrySchema = z.object({
-  id: z.uuid(),
-  festival_id: z.uuid(),
-  version: z.number().int().min(0),
-  kind: z.enum(kinds),
-  occurred_on: z.iso.date(),
-  amount: z.number().int().min(1).max(100000000),
-  description: z.string().trim().min(2).max(300),
-  category: z.string().trim().max(80),
-  reference: z.string().trim().max(100),
-  account_id: z.uuid().nullable(),
-  to_account_id: z.uuid().nullable(),
-  flat_id: z.uuid().nullable(),
-  vendor_id: z.uuid().nullable(),
-});
+export const entrySchema = z
+  .object({
+    id: z.uuid(),
+    festival_id: z.uuid(),
+    version: z.number().int().min(0),
+    kind: z.enum(kinds),
+    occurred_on: z.iso.date(),
+    amount: z.number().int().min(1).max(100000000),
+    description: z.string().trim().min(2).max(300),
+    category: z.enum(financeCategories),
+    category_other: z.string().trim().max(120).default(""),
+    reference: z.string().trim().max(100),
+    account_id: z.uuid().nullable(),
+    to_account_id: z.uuid().nullable(),
+    flat_id: z.uuid().nullable(),
+    vendor_id: z.uuid().nullable(),
+  })
+  .refine(
+    (v) =>
+      v.category === "Other"
+        ? v.category_other.length >= 2
+        : v.category_other === "",
+    "Describe Other, or leave its detail blank for a listed category.",
+  );
 export type EntryInput = z.infer<typeof entrySchema>;
 export type Entry = EntryInput & {
   number: number;
@@ -65,6 +75,12 @@ export type FinanceReport = {
   as_of: string;
   overview: Overview;
   entries: Entry[];
+  categories: {
+    category: string;
+    collected: number;
+    billed: number;
+    paid: number;
+  }[];
   accounts: (Account & {
     email: string;
     display_name: string;

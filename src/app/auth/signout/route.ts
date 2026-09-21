@@ -4,10 +4,18 @@ import { appUrl, isConfigured, publicConfig } from "@/lib/config";
 
 export async function POST(request: NextRequest) {
   const origin = request.headers.get("origin");
-  if (origin && origin !== appUrl()) {
+  const allowed = [appUrl()];
+  if (process.env.VERCEL_ENV === "preview") {
+    for (const host of [process.env.VERCEL_URL, process.env.VERCEL_BRANCH_URL])
+      if (host) allowed.push(`https://${host}`);
+  }
+  if (origin && !allowed.includes(origin)) {
     return new NextResponse("Invalid request origin", { status: 403 });
   }
-  const response = NextResponse.redirect(new URL("/login", appUrl()), 303);
+  const response = NextResponse.redirect(
+    new URL("/login", origin && allowed.includes(origin) ? origin : appUrl()),
+    303,
+  );
   response.headers.set("Cache-Control", "private, no-store");
   if (!isConfigured()) return response;
 

@@ -73,6 +73,31 @@ export default async function Report({
         </dl>
       </section>
       <section className="panel finance-register">
+        <h2>Category summary</h2>
+        <div className="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th>Collected</th>
+                <th>Billed</th>
+                <th>Paid to suppliers</th>
+              </tr>
+            </thead>
+            <tbody>
+              {r.categories.map((c) => (
+                <tr key={c.category}>
+                  <td>{c.category}</td>
+                  <td>{inr(c.collected)}</td>
+                  <td>{inr(c.billed)}</td>
+                  <td>{inr(c.paid)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+      <section className="panel finance-register">
         <h2>Money holders</h2>
         <div className="table-scroll">
           <table>

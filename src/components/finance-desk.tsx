@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createResource, reviewEntry, saveEntry } from "@/app/desk/actions";
@@ -12,6 +13,7 @@ import {
   type Overview,
   type Vendor,
 } from "@/lib/finance";
+import { financeCategories } from "@/lib/categories";
 import { rupeesToPaise } from "@/lib/validation";
 import type { Flat, Member } from "@/lib/types";
 type Props = {
@@ -29,6 +31,7 @@ export function FinanceDesk(p: Props) {
   const [pending, start] = useTransition();
   const [notice, setNotice] = useState("");
   const [editing, setEditing] = useState<Entry | null>(null);
+  const [category, setCategory] = useState<string>("Guest meals");
   const [kind, setKind] = useState<EntryKind>("collection");
   const [requestId, setRequestId] = useState<string | null>(null);
   const [formKey, setFormKey] = useState(0);
@@ -52,10 +55,20 @@ export function FinanceDesk(p: Props) {
   function reset() {
     setEditing(null);
     setKind("collection");
+    setCategory("Guest meals");
     setRequestId(null);
     setFormKey((k) => k + 1);
   }
   function save(form: FormData) {
+    if (
+      kind === "collection" &&
+      ["Fixed contribution", "Meal package"].includes(category)
+    ) {
+      router.push(
+        `/desk/${p.festivalId}/payments${editing ? `?entry=${editing.id}` : ""}`,
+      );
+      return;
+    }
     let amount: number;
     try {
       amount = rupeesToPaise(String(form.get("amount")));
@@ -75,7 +88,8 @@ export function FinanceDesk(p: Props) {
         amount,
         occurred_on: form.get("occurred_on"),
         description: form.get("description"),
-        category: form.get("category") ?? "",
+        category,
+        category_other: category === "Other" ? form.get("category_other") : "",
         reference: form.get("reference") ?? "",
         account_id: hasAccount ? form.get("account_id") : null,
         to_account_id: kind === "transfer" ? form.get("to_account_id") : null,
@@ -93,6 +107,23 @@ export function FinanceDesk(p: Props) {
   }
   return (
     <>
+      <div className="entry-actions">
+        <Link className="button" href={`/desk/${p.festivalId}/payments`}>
+          Fixed / meal-package payment
+        </Link>
+        <Link
+          className="button secondary"
+          href={`/desk/${p.festivalId}/attendance`}
+        >
+          Attendance & guests
+        </Link>
+        <Link
+          className="button secondary"
+          href={`/desk/${p.festivalId}/operations`}
+        >
+          Catering & events
+        </Link>
+      </div>
       <section className="finance-stats" aria-label="General overview">
         {[
           ["Collections", p.overview.collections],
@@ -133,13 +164,28 @@ export function FinanceDesk(p: Props) {
                 Entry type
                 <select
                   value={kind}
-                  onChange={(e) => setKind(e.target.value as EntryKind)}
+                  onChange={(e) => {
+                    setKind(e.target.value as EntryKind);
+                    setCategory(
+                      (
+                        {
+                          collection: "Guest meals",
+                          donation: "Donation",
+                          transfer: "Transfer",
+                          opening: "Opening funds",
+                          refund: "Refund",
+                        } as Record<string, string>
+                      )[e.target.value] ?? "Other",
+                    );
+                  }}
                 >
                   {kinds
                     .filter((k) => admin || !["opening", "charge"].includes(k))
                     .map((k) => (
                       <option key={k} value={k}>
-                        {kindLabels[k]}
+                        {k === "collection"
+                          ? "Guest / other flat receipt"
+                          : kindLabels[k]}
                       </option>
                     ))}
                 </select>
@@ -261,13 +307,37 @@ export function FinanceDesk(p: Props) {
               <div className="form-grid">
                 <label>
                   Category
-                  <input
+                  <select
                     name="category"
-                    maxLength={80}
-                    defaultValue={editing?.category}
-                    placeholder="Catering, decoration…"
-                  />
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    required
+                  >
+                    {financeCategories
+                      .filter(
+                        (c) =>
+                          kind !== "collection" ||
+                          !["Fixed contribution", "Meal package"].includes(c),
+                      )
+                      .map((c) => (
+                        <option key={c} value={c}>
+                          {c}
+                        </option>
+                      ))}
+                  </select>
                 </label>
+                {category === "Other" && (
+                  <label>
+                    Other category
+                    <input
+                      name="category_other"
+                      required
+                      minLength={2}
+                      maxLength={120}
+                      defaultValue={editing?.category_other ?? ""}
+                    />
+                  </label>
+                )}
                 <label>
                   Reference
                   <input
@@ -279,7 +349,12 @@ export function FinanceDesk(p: Props) {
                 </label>
               </div>
               <button className="button">
-                {pending ? "Saving…" : "Save for confirmation"}
+                {pending
+                  ? "Saving…"
+                  : kind === "collection" &&
+                      ["Fixed contribution", "Meal package"].includes(category)
+                    ? "Continue to attendees & payment"
+                    : "Save for confirmation"}
               </button>
               {editing && (
                 <button
@@ -460,7 +535,20 @@ export function FinanceDesk(p: Props) {
                               className="text-button"
                               disabled={pending}
                               onClick={() => {
+                                if (
+                                  e.kind === "collection" &&
+                                  [
+                                    "Fixed contribution",
+                                    "Meal package",
+                                  ].includes(e.category)
+                                ) {
+                                  router.push(
+                                    `/desk/${p.festivalId}/payments?entry=${e.id}`,
+                                  );
+                                  return;
+                                }
                                 setEditing(e);
+                                setCategory(e.category);
                                 setKind(e.kind);
                                 setRequestId(null);
                                 setFormKey((k) => k + 1);
