@@ -68,12 +68,12 @@ export function EmailLoginForm({ configured }: { configured: boolean }) {
               name="code"
               inputMode="numeric"
               autoComplete="one-time-code"
-              pattern="[0-9]{8}"
-              minLength={8}
-              maxLength={8}
+              pattern="[0-9]{6}"
+              minLength={6}
+              maxLength={6}
               required
               autoFocus
-              placeholder="8-digit code"
+              placeholder="6-digit code"
             />
           </label>
           <small>

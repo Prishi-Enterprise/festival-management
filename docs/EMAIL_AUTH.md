@@ -8,7 +8,7 @@ The initial admin is `prishi.ai.ventures@gmail.com`. The unused initial invitati
 
 Resend sends Supabase Auth emails from `Radhe Festival <login@auth.prishi.in>`. Configure SMTP in Supabase: host `smtp.resend.com`, port `465`, username `resend`, password a Resend API key limited to sending for `auth.prishi.in`. Never put the key in the app, Git, or public environment variables. Domain verification is managed through GoDaddy Domain Connect.
 
-Use `supabase/templates/otp.html` for **both Confirm sign up and Magic link or OTP** templates, subject `Your Radhe Festival sign-in code`. The `{{ .Token }}` variable is required. Enable email confirmation and set eight-digit OTPs with a 600-second expiry. Keep the minimum resend interval at 60 seconds. Resend free daily/monthly limits and Supabase Auth email rate limits both apply.
+Use `supabase/templates/otp.html` for **both Confirm sign up and Magic link or OTP** templates, subject `Your Radhe Festival sign-in code`. The `{{ .Token }}` variable is required. Enable email confirmation and set six-digit OTPs with a 600-second expiry. Keep the minimum resend interval at 60 seconds. Resend free daily/monthly limits and Supabase Auth email rate limits both apply.
 
 ## Access rules
 
@@ -27,3 +27,9 @@ Run local Supabase with the committed templates and confirmation settings. Email
 - Save both OTP templates and the 600-second expiry.
 - Deploy main and request a real code using the initial admin email.
 - Verify first admin sign-in and code replay rejection.
+
+## Production acceptance — 21 September 2026
+
+Custom SMTP and both OTP templates are saved. A real email from Radhe Festival arrived in the initial admin Gmail inbox, and its eight-digit code successfully opened the production admin dashboard with one active member and no pending invitation. Google remains coming soon.
+
+A six-digit update is prepared locally at the owner’s request for shorter codes. Supabase supports 6–10 digits, so four digits cannot be configured. Production remains at eight digits until the app deployment and provider setting are switched together. Preserve the 600-second expiry and 60-second resend interval. Code reuse rejection was verified locally.

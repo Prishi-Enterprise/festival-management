@@ -28,7 +28,7 @@ export async function emailLogin(
         ...previous,
         email: value,
         step: "code",
-        error: "Enter the eight-digit code from your email.",
+        error: "Enter the six-digit code from your email.",
       };
     const { error } = await supabase.auth.verifyOtp({
       email: value,

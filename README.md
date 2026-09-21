@@ -2,7 +2,7 @@
 
 Committee application for festival collections, money custody, expenses, meals, catering, special events, and final reports.
 
-**Status: admin foundation deployed; email OTP delivery setup in progress.**
+**Status: admin foundation deployed; Resend email OTP delivery and production admin sign-in verified.**
 
 Target stack: Next.js with TypeScript and Supabase (Postgres, Auth, private Storage). Repository: public `Prishi-Enterprise/festival-management`, independently versioned under the PrishiAI workspace.
 
@@ -21,6 +21,6 @@ Email OTP sign-in is invite-only; Google is retained as coming soon. The only in
 
 The original workbook, resident lists, receipts, exports, and credentials are excluded from Git. The documents contain aggregate analysis and illustrative examples, not a production data import.
 
-Admin foundation checks: 20 embedded-PostgreSQL/validation tests, lint, TypeScript and production build pass. See [Email authentication](docs/EMAIL_AUTH.md) for OTP setup and Google activation later. Vercel deploys main automatically. GitHub Actions setup is deferred because the connected GitHub token does not have workflow scope.
+Admin foundation checks: 21 embedded-PostgreSQL/validation tests, lint, TypeScript and production build pass. See [Email authentication](docs/EMAIL_AUTH.md) for OTP setup and Google activation later. Vercel deploys main automatically. GitHub Actions setup is deferred because the connected GitHub token does not have workflow scope.
 
 - [Email authentication](docs/EMAIL_AUTH.md): Resend delivery, OTP templates, initial admin and testing.
