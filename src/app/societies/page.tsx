@@ -4,7 +4,7 @@ import { Brand } from "@/components/brand";
 export default async function Page() {
   const { access } = await requireSocieties();
   return (
-    <div className="operations-shell">
+    <div className="operations-shell society-shell">
       <header className="operations-header">
         <Brand />
         <form action="/auth/signout" method="post">

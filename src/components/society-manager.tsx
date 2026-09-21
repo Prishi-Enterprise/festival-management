@@ -22,7 +22,7 @@ export function SocietyManager({
   const router = useRouter();
   return (
     <>
-      <div className="section-heading">
+      <div className="section-heading society-heading">
         <h1>{superadmin ? "Society management" : "Choose your society"}</h1>
         {superadmin && (
           <button
@@ -206,7 +206,7 @@ export function SocietyManager({
       )}
       <div className="society-grid">
         {societies.map((s) => (
-          <section className="panel" key={s.id}>
+          <section className="panel society-card" key={s.id}>
             <Brand society={s} />
             <p>
               {superadmin

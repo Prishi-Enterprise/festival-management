@@ -1760,6 +1760,64 @@ input::-webkit-datetime-edit { min-width: 0; padding: 0; }
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 310px), 1fr));
   gap: 20px;
 }
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 20px;
+}
+.form-actions > form {
+  display: flex;
+  margin: 0;
+}
+.society-shell .operations-header {
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.society-shell .operations-header > form {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.society-shell .operations-header .text-button {
+  min-height: 44px;
+}
+.society-heading {
+  flex-wrap: wrap;
+}
+.society-heading h1 {
+  margin: 0;
+  min-width: 0;
+}
+.society-heading > .button {
+  flex-shrink: 0;
+}
+.society-card {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0;
+}
+.society-card .form-actions {
+  margin-top: auto;
+  padding-top: 8px;
+}
+@media (max-width: 480px) {
+  .society-heading > .button {
+    width: 100%;
+  }
+  .society-shell .panel {
+    padding: 18px;
+  }
+  .society-shell .form-actions > .button,
+  .society-shell .form-actions > form {
+    flex: 1 1 100%;
+  }
+  .society-shell .form-actions > form > .button {
+    width: 100%;
+  }
+}
 .brand strong {
   overflow-wrap: anywhere;
   white-space: normal;
