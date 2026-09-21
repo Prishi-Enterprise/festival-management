@@ -1,3 +1,4 @@
+import { BackNavigation } from "@/components/back-navigation";
 import { Brand } from "@/components/brand";
 import { Nav } from "@/components/nav";
 import { requireMember } from "@/lib/auth";
@@ -54,7 +55,10 @@ export default async function AdminLayout({
             </form>
           </div>
         </header>
-        <main className="main-content">{children}</main>
+        <main className="main-content">
+          <BackNavigation />
+          {children}
+        </main>
         <footer className="app-footer">
           RADHE FESTIVAL DESK <span>Made for our community.</span>
         </footer>

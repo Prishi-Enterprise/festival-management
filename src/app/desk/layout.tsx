@@ -1,3 +1,4 @@
+import { BackNavigation } from "@/components/back-navigation";
 import Link from "next/link";
 import { requireMember } from "@/lib/auth";
 import { Brand } from "@/components/brand";
@@ -20,7 +21,10 @@ export default async function DeskLayout({
           </form>
         </nav>
       </header>
-      <main>{children}</main>
+      <main>
+        <BackNavigation />
+        {children}
+      </main>
     </div>
   );
 }
