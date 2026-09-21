@@ -104,3 +104,64 @@ it("persists custom child age brackets and rejects invalid ranges", async () => 
     ]),
   ).rejects.toThrow("ordered");
 });
+it("allows enabling unused meals after enrollment while protecting existing entitlements and check-ins", async () => {
+  await asUser(db, ADMIN, "select add_flats('A',array['101'])");
+  const flat = (await db.query<{ id: string }>("select id from flats limit 1"))
+    .rows[0].id;
+  const fid = (
+    await asUser<{ id: string }>(db, ADMIN, "select save_festival($1) id", [
+      { ...draft(), flat_ids: [flat] },
+    ])
+  ).rows[0].id;
+  const initial = rows(["Dinner"]).map((r) => ({
+    ...r,
+    coverage: "not_served",
+  }));
+  await asUser(db, ADMIN, "select save_meal_calendar($1,$2)", [fid, initial]);
+  const enrollment = (
+    await db.query<{ id: string }>(
+      'insert into flat_enrollments(festival_id,flat_id,members,fixed_rate,created_by) values($1,$2,\'[{"name":"Resident"}]\',0,$3) returning id',
+      [fid, flat, ADMIN],
+    )
+  ).rows[0].id;
+  const enabled = initial.map((r) => ({ ...r, coverage: "fixed", version: 1 }));
+  await asUser(db, ADMIN, "select save_meal_calendar($1,$2)", [fid, enabled]);
+  expect(
+    (
+      await db.query(
+        "select id from meal_services where festival_id=$1 and coverage='fixed'",
+        [fid],
+      )
+    ).rows,
+  ).toHaveLength(2);
+  await expect(
+    asUser(db, ADMIN, "select save_meal_calendar($1,$2)", [
+      fid,
+      enabled.map((r) => ({ ...r, coverage: "package", version: 2 })),
+    ]),
+  ).rejects.toThrow("Existing enrolled meal coverage");
+  const extra = rows(["Snacks"]).map((r) => ({ ...r, coverage: "not_served" }));
+  await asUser(db, ADMIN, "select save_meal_calendar($1,$2)", [
+    fid,
+    [...enabled.map((r) => ({ ...r, version: 2 })), ...extra],
+  ]);
+  const service = (
+    await db.query<{ id: string }>(
+      "select id from meal_services where festival_id=$1 and meal='Snacks' order by service_date limit 1",
+      [fid],
+    )
+  ).rows[0].id;
+  await db.query(
+    "insert into resident_checkins(enrollment_id,service_id,attended) values($1,$2,0)",
+    [enrollment, service],
+  );
+  await expect(
+    asUser(db, ADMIN, "select save_meal_calendar($1,$2)", [
+      fid,
+      [
+        ...enabled.map((r) => ({ ...r, version: 3 })),
+        ...extra.map((r) => ({ ...r, coverage: "fixed", version: 1 })),
+      ],
+    ]),
+  ).rejects.toThrow("check-ins or catering");
+});
