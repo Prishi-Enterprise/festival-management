@@ -71,6 +71,14 @@ export async function emailLogin(
         "Email delivery is temporarily unavailable. Please try again shortly.",
     };
   }
+  if (error) {
+    return {
+      email: value,
+      step: "email",
+      error:
+        "Could not send a sign-in code. Check the address and use the email your admin invited.",
+    };
+  }
   return {
     email: value,
     step: "code",
