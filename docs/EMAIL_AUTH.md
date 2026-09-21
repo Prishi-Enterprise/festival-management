@@ -37,3 +37,5 @@ The approved six-digit update is deployed and the Supabase provider is configure
 ## Final-launch identity handover
 
 The owner designated `sb@prishi.in` as the official production admin. `prishi.ai.ventures@gmail.com` and `shivamastha@gmail.com` are personal addresses. Keep current development access until final launch. Before committee launch, invite the official address as admin, verify its OTP delivery and admin access, then remove administrative access from personal accounts as part of the handover. Do not demote the last active admin or rewrite applied bootstrap migrations. The application currently uses the admin role, not a distinct superadmin permission tier.
+
+A subsequent real six-digit Resend email was received and used successfully on `radhe.prishi.in` after the approved length change.

@@ -37,3 +37,7 @@ Database tests cover ownership, admin confirmation, locked/stale edits, reversal
 ## Official admin at final launch
 
 `sb@prishi.in` is the official production administrator. The existing `prishi.ai.ventures@gmail.com` account remains available during development; it and `shivamastha@gmail.com` are personal emails. Before committee launch, invite the official address, verify real OTP delivery and admin access, and complete the personal-account access handover. Never remove the last working admin or rewrite an applied bootstrap migration. The highest role is currently `admin`; there is no separate superadmin tier.
+
+## Deployment verification
+
+Release `37dd063` deployed successfully to Vercel on 21 September 2026. The finance, meal-calendar and special-day-removal migrations are applied to the single hosted project. The database confirms `is_dussehra` is absent; no synthetic financial entries or meal services were inserted in production. The live admin page displays the new meal editor. A new six-digit code was delivered to Gmail and successfully authenticated the existing development admin. All 33 tests, lint, type checking and production build pass.

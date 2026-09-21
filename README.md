@@ -2,7 +2,7 @@
 
 Committee application for festival collections, money custody, expenses, meals, catering, special events, and final reports.
 
-**Status: admin foundation and six-digit email login are live. Finance workflows and configurable meal coverage are implemented and locally verified for the next release.**
+**Status: admin foundation and six-digit email login are live. Finance workflows and configurable meal coverage are deployed and verified.**
 
 Target stack: Next.js with TypeScript and Supabase (Postgres, Auth, private Storage). Repository: public `Prishi-Enterprise/festival-management`, independently versioned under the PrishiAI workspace.
 
