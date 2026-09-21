@@ -5,12 +5,12 @@ Updated 21 September 2026. This supersedes earlier single-project and Google-onl
 | Environment | Supabase | Application |
 | --- | --- | --- |
 | Dummy/dev | `pokeislmfmfuqgfkxmzp`, Tokyo `ap-northeast-1` | Vercel Preview branch `codex/launch-candidate` |
-| Final production | `gfxtoblbiravcdwgerxw`, Mumbai `ap-south-1` | `https://radhe.prishi.in`, production cutover authorized 21 September 2026 |
+| Final production | `gfxtoblbiravcdwgerxw`, Mumbai `ap-south-1` | `https://radhe.prishi.in`, live on Mumbai, 21 September 2026 |
 | Local | Supabase on Colima | `http://localhost:3000` |
 
 Both hosted projects belong to `prishi-ai-ventures` on Free. Vercel Hobby project `radhe-festival` belongs to `prishi-ai`. One public repository, `Prishi-Enterprise/festival-management`, is connected. Main deploys to Production; the candidate branch deploys to Preview. The owner authorized production deployment for the demonstration on 21 September 2026.
 
-Production environment variables now target Mumbai; the launch build must be rebuilt from main to activate them. Preview URL/key variables point explicitly to Tokyo and `NEXT_PUBLIC_APP_ENV=dev`. Preview callbacks and signout use Vercel's branch/deployment URL. Public URL/key values are embedded at build time. The app uses user sessions and database authorization, never a service-role key.
+Production is live on Mumbai. Release `33c4d3e` deployed successfully to `radhe.prishi.in`; the live OTP request created the official admin Auth identity in Mumbai. Preview URL/key variables point explicitly to Tokyo and `NEXT_PUBLIC_APP_ENV=dev`. Preview callbacks and signout use Vercel's branch/deployment URL. Public URL/key values are embedded at build time. The app uses user sessions and database authorization, never a service-role key.
 
 ## Prepared Mumbai database
 
@@ -18,7 +18,7 @@ Migrations 001–011 are applied. Fresh bootstrap uses only `sb@prishi.in` as th
 
 The owner requested copying the flats dossier after initially choosing an empty database. All 224 flats are copied: A/B/C/D, 56 each. No development festival, meal calendar, finance entries or operational test records were copied.
 
-Resend SMTP is saved, OTP is six digits with a ten-minute expiry, and the owner disabled the separate Confirm email setting. App membership still requires an invited address and OTP authentication. Site URL is `https://radhe.prishi.in`, with exact `/auth/callback` redirect configured. The Before User Created admission hook is enabled for `public.before_user_created`. Real OTP/admin access for `sb@prishi.in` remains a launch verification step. Google remains coming soon.
+Resend SMTP is saved, OTP is six digits with a ten-minute expiry, and the owner disabled the separate Confirm email setting. App membership still requires an invited address and OTP authentication. Site URL is `https://radhe.prishi.in`, with exact `/auth/callback` redirect configured. The Before User Created admission hook is enabled for `public.before_user_created`. The live OTP request for `sb@prishi.in` succeeded; completion of the emailed code and first admin sign-in remains the owner handoff. Google remains coming soon.
 
 ## Authorized production cutover
 
