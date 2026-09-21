@@ -40,7 +40,7 @@ export function FinanceDesk(p: Props) {
   } | null>(null);
   const [resource, setResource] = useState<"account" | "vendor">("account");
   const [resourceId, setResourceId] = useState<string | null>(null);
-  const [filter, setFilter] = useState("pending");
+  const [filter, setFilter] = useState("all");
   const admin = p.member.role === "admin";
   const flatName = (id: string | null) => {
     const f = p.flats.find((f) => f.id === id);
@@ -497,10 +497,18 @@ export function FinanceDesk(p: Props) {
           <label>
             Status
             <select value={filter} onChange={(e) => setFilter(e.target.value)}>
-              <option value="pending">Awaiting confirmation</option>
-              <option value="confirmed">Confirmed & locked</option>
-              <option value="void">Voided</option>
-              <option value="all">All entries</option>
+              <option value="pending">
+                Awaiting confirmation (
+                {p.entries.filter((e) => e.status === "pending").length})
+              </option>
+              <option value="confirmed">
+                Confirmed &amp; locked (
+                {p.entries.filter((e) => e.status === "confirmed").length})
+              </option>
+              <option value="void">
+                Voided ({p.entries.filter((e) => e.status === "void").length})
+              </option>
+              <option value="all">All entries ({p.entries.length})</option>
             </select>
           </label>
         </div>
@@ -623,7 +631,11 @@ export function FinanceDesk(p: Props) {
           </table>
         </div>
         {!p.entries.some((e) => filter === "all" || e.status === filter) && (
-          <p className="empty-state">No entries in this view.</p>
+          <p className="empty-state">
+            {p.entries.length
+              ? "No entries match this status. Choose All entries to see the full register."
+              : "No entries recorded yet."}
+          </p>
         )}
       </section>
       {review && (
