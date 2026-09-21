@@ -1,3 +1,4 @@
+import { FestivalNavigation } from "@/components/festival-navigation";
 import { BackNavigation } from "@/components/back-navigation";
 import Link from "next/link";
 import { requireMember } from "@/lib/auth";
@@ -22,7 +23,10 @@ export default async function DeskLayout({
         </nav>
       </header>
       <main>
-        <BackNavigation />
+        <div className="desk-navigation no-print">
+          <BackNavigation />
+          <FestivalNavigation admin={member.role === "admin"} />
+        </div>
         {children}
       </main>
     </div>

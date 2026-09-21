@@ -1,5 +1,4 @@
 "use client";
-import Link from "next/link";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createResource, reviewEntry, saveEntry } from "@/app/desk/actions";
@@ -107,29 +106,6 @@ export function FinanceDesk(p: Props) {
   }
   return (
     <>
-      <div className="entry-actions">
-        <Link
-          className="button secondary"
-          href={`/desk/${p.festivalId}/guest-payments`}
-        >
-          Guest entries & payee dues
-        </Link>
-        <Link className="button" href={`/desk/${p.festivalId}/payments`}>
-          Fixed / meal-package payment
-        </Link>
-        <Link
-          className="button secondary"
-          href={`/desk/${p.festivalId}/attendance`}
-        >
-          Attendance & guests
-        </Link>
-        <Link
-          className="button secondary"
-          href={`/desk/${p.festivalId}/operations`}
-        >
-          Catering & events
-        </Link>
-      </div>
       {p.overview && (
         <>
           <section className="finance-stats" aria-label="General overview">

@@ -1698,3 +1698,16 @@ td input:not([type="radio"]) {
   .hero-panel { padding: 24px; }
   .hero-panel p { max-width: 100%; }
 }
+
+/* Shared festival tabs stay available after navigating into any workflow. */
+.desk-navigation { position: sticky; top: 0; z-index: 20; background: #fffdf8; margin-bottom: 20px; }
+.desk-navigation .back-navigation { position: static; margin-bottom: 0; }
+.festival-navigation { display: flex; gap: 8px; flex-wrap: wrap; padding: 10px 0; border-bottom: 1px solid #e4d8bb; }
+.festival-navigation a { display: inline-flex; align-items: center; min-height: 44px; padding: 10px 14px; border: 1px solid #d9bd76; border-radius: 8px; color: #182339; font-size: 14px; font-weight: 600; white-space: nowrap; }
+.festival-navigation a[aria-current="page"] { background: #10152c; color: #fffefa; border-color: #10152c; }
+.festival-navigation a:focus-visible { outline: 3px solid #a77b1c; outline-offset: -3px; }
+@media (max-width: 900px) {
+ .festival-navigation { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 12px; }
+ .festival-navigation a { flex-shrink: 0; }
+}
+@media print { .desk-navigation { display: none; } }
