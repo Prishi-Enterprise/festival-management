@@ -10,16 +10,19 @@ export default async function DeskLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { member, society, superadmin } = await requireMember();
+  const { member, society, superadmin, canSwitchSociety } =
+    await requireMember();
   return (
     <div className="operations-shell" style={themeStyle(society.theme_color)}>
       <header className="operations-header">
         <Brand society={society} />
         <nav aria-label="Festival desk">
           <Link href="/desk">Festival desk</Link>
-          <Link href="/societies">
-            {superadmin ? "Manage societies" : "Switch society"}
-          </Link>
+          {canSwitchSociety && (
+            <Link href="/societies">
+              {superadmin ? "Manage societies" : "Switch society"}
+            </Link>
+          )}
           {member.role === "admin" && <Link href="/admin">Administration</Link>}
           <form action="/auth/signout" method="post">
             <button className="text-button">Sign out</button>

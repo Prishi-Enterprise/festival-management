@@ -50,5 +50,11 @@ export async function requireMember(adminOnly = false) {
     : actual;
   if (!member?.active) redirect("/access-pending");
   if (adminOnly && member.role !== "admin") redirect("/desk");
-  return { supabase, member, society, superadmin: access.superadmin };
+  return {
+    supabase,
+    member,
+    society,
+    superadmin: access.superadmin,
+    canSwitchSociety: access.superadmin || access.societies.length > 1,
+  };
 }

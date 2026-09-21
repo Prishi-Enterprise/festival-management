@@ -11,7 +11,8 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { member, society, superadmin } = await requireMember(true);
+  const { member, society, superadmin, canSwitchSociety } =
+    await requireMember(true);
   return (
     <div className="app-shell" style={themeStyle(society.theme_color)}>
       <aside className="sidebar">
@@ -25,9 +26,11 @@ export default async function AdminLayout({
         </div>
         <p className="nav-label">WORKSPACE</p>
         <Nav />
-        <Link className="nav-link" href="/societies">
-          {superadmin ? "Manage societies" : "Switch society"}
-        </Link>
+        {canSwitchSociety && (
+          <Link className="nav-link" href="/societies">
+            {superadmin ? "Manage societies" : "Switch society"}
+          </Link>
+        )}
         <div className="sidebar-bottom">
           <div className="admin-marker">
             <ShieldCheck size={17} /> Administrator
