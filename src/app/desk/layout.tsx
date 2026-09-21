@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { requireMember } from "@/lib/auth";
-import { signOut } from "@/app/actions";
 import { Brand } from "@/components/brand";
 export const dynamic = "force-dynamic";
 export default async function DeskLayout({
@@ -16,7 +15,7 @@ export default async function DeskLayout({
         <nav aria-label="Festival desk">
           <Link href="/desk">Festival desk</Link>
           {member.role === "admin" && <Link href="/admin">Administration</Link>}
-          <form action={signOut}>
+          <form action="/auth/signout" method="post">
             <button className="text-button">Sign out</button>
           </form>
         </nav>

@@ -4,7 +4,9 @@ import { isConfigured, publicConfig } from "@/lib/config";
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
   response.headers.set("Cache-Control", "private, no-store");
-  if (!isConfigured()) return response;
+  // The sign-out handler owns cookie deletion; do not refresh that session.
+  if (request.nextUrl.pathname === "/auth/signout" || !isConfigured())
+    return response;
   const { url, key } = publicConfig();
   const supabase = createServerClient(url, key, {
     cookies: {

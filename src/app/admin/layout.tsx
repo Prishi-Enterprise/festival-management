@@ -1,7 +1,6 @@
 import { Brand } from "@/components/brand";
 import { Nav } from "@/components/nav";
 import { requireMember } from "@/lib/auth";
-import { signOut } from "@/app/actions";
 import { LogOut, ShieldCheck } from "lucide-react";
 export const dynamic = "force-dynamic";
 export default async function AdminLayout({
@@ -48,7 +47,7 @@ export default async function AdminLayout({
             <span className="avatar" title={member.email}>
               {(member.display_name || member.email).slice(0, 1).toUpperCase()}
             </span>
-            <form action={signOut}>
+            <form action="/auth/signout" method="post">
               <button className="icon-button" aria-label="Sign out">
                 <LogOut size={18} />
               </button>

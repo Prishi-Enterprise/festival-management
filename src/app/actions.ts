@@ -15,10 +15,3 @@ export async function signIn() {
   if (error || !data.url) redirect("/login?error=provider");
   redirect(data.url);
 }
-export async function signOut() {
-  if (isConfigured()) {
-    const supabase = await createClient();
-    await supabase.auth.signOut();
-  }
-  redirect("/login");
-}

@@ -1,5 +1,4 @@
 import { AuthFrame } from "@/components/auth-frame";
-import { signOut } from "@/app/actions";
 export default function AccessPending() {
   return (
     <AuthFrame>
@@ -15,7 +14,7 @@ export default function AccessPending() {
           membership. If you were just invited, sign out and sign in again to
           claim access.
         </p>
-        <form action={signOut}>
+        <form action="/auth/signout" method="post">
           <button className="button">Use another email account</button>
         </form>
       </div>
