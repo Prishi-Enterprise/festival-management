@@ -1,5 +1,7 @@
 # Product and delivery plan
 
+> **Updated hosting/environment decision (21 September 2026):** [HOSTING.md](HOSTING.md) supersedes the earlier separate-project and deferred-hosting assumptions below. Use one hosted Supabase project (`pokeislmfmfuqgfkxmzp`, main/production), Vercel Hobby, and `radhe.prishi.in` (GoDaddy). Development uses local Supabase; hosted branches are excluded. Releases use manual Vercel deployment after local acceptance. An empty Vercel project and domain attachment are complete; deployment still waits for local acceptance.
+
 Version 1.0 · 21 September 2026 · Planning baseline
 
 ## Outcome
