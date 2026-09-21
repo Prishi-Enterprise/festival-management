@@ -1,3 +1,5 @@
+import { Brand } from "@/components/brand";
+import { themeStyle } from "@/lib/societies";
 import { notFound } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
@@ -19,7 +21,8 @@ export default async function Page({
   if (error) throw new Error("Could not load pass.");
   if (!p) notFound();
   return (
-    <main className="main-content">
+    <main className="main-content" style={themeStyle(p.society.theme_color)}>
+      <Brand society={p.society} />
       <section className="panel">
         <h1>{p.festival} · Guest pass</h1>
         <h2>
