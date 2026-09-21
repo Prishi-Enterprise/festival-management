@@ -50,6 +50,20 @@ export function FlatPaymentForm({
               );
               return;
             }
+            const invalidName = members.findIndex(
+              (m) => m.name.trim().length < 2 || m.name.trim().length > 100,
+            );
+            if (fixed && !enrollment && invalidName >= 0) {
+              setMessage(
+                `Attendee ${invalidName + 1}: enter a name with 2–100 characters.`,
+              );
+              form
+                .querySelector<HTMLInputElement>(
+                  `#attendee-name-${invalidName}`,
+                )
+                ?.focus();
+              return;
+            }
             if (!form.checkValidity()) {
               const invalid = form.querySelector<
                 HTMLInputElement | HTMLSelectElement
@@ -252,6 +266,13 @@ export function FlatPaymentForm({
                     <label>
                       Name
                       <input
+                        id={`attendee-name-${index}`}
+                        aria-invalid={
+                          !!message &&
+                          (m.name.trim().length < 2 ||
+                            m.name.trim().length > 100)
+                        }
+                        aria-describedby={`attendee-name-error-${index}`}
                         required
                         minLength={2}
                         maxLength={100}
@@ -264,6 +285,15 @@ export function FlatPaymentForm({
                           )
                         }
                       />
+                      <span
+                        id={`attendee-name-error-${index}`}
+                        className="small"
+                      >
+                        {!!message &&
+                        (m.name.trim().length < 2 || m.name.trim().length > 100)
+                          ? "Enter a name with 2–100 characters."
+                          : ""}
+                      </span>
                     </label>
                     <label>
                       Age group
