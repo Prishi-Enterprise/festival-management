@@ -258,7 +258,7 @@ If an edit would change another member's payment/allocation, create insufficient
 
 Use **Google OAuth through Supabase Auth** with PKCE and the server callback code exchange. Only Google identity scopes (openid, email, profile) are required. No password-based account creation or resident login in the first release. A Google login proves identity; active membership grants application access. See [Supabase Google sign-in](https://supabase.com/docs/guides/auth/social-login/auth-google).
 
-Bootstrap `shivamastha@gmail.com` as the **only initial admin** using a one-time operator-created invitation/configuration. On first successful Google login, validate the provider identity and verified email, bind the invitation to `auth.users.id`, and mark bootstrap consumed. Do not put a reusable admin-email shortcut in middleware; later promotion/demotion is controlled by the membership table, not by matching an email on every request.
+Bootstrap `prishi.ai.ventures@gmail.com` as the **only initial admin** using a one-time operator-created invitation/configuration. On first successful Google login, validate the provider identity and verified email, bind the invitation to `auth.users.id`, and mark bootstrap consumed. Do not put a reusable admin-email shortcut in middleware; later promotion/demotion is controlled by the membership table, not by matching an email on every request.
 
 Admin onboarding creates an invitation for the exact Google email and festival assignments. Normalize case and whitespace only; do not remove Gmail dots or plus aliases. Before User Created hook rejects uninvited new Google identities. After OAuth exchange, atomically claim the active invitation and bind membership to the verified user ID. Reject expired/revoked invitations and email mismatch. Existing authenticated users must still pass active membership checks on every request; removing access takes effect even with an unexpired JWT. The hook is an admission layer, not the sole authorization mechanism. See [Supabase admission hook](https://supabase.com/docs/guides/auth/auth-hooks/before-user-created-hook).
 
@@ -335,7 +335,7 @@ For launch, import flat master and verified opening balances only. Historical Na
 | Change DB rate version | New charge uses new rate; existing charges and reports retain original rate |
 | Admin configures 9/10/11 days, blocks/flats and prices | Explicit calendar validates; new rates versioned; existing postings preserved |
 | Committee price-tampering request | Direct table write, admin config RPC and forged posting rate all rejected |
-| Google bootstrap login | Only verified `shivamastha@gmail.com` can claim the one-time initial admin grant |
+| Google bootstrap login | Only verified `prishi.ai.ventures@gmail.com` can claim the one-time initial admin grant |
 | Uninvited/wrong Google account | No onboarding/membership; no data access |
 | Expired/revoked invite and deactivated member | Cannot claim or regain access; existing JWT cannot bypass membership checks |
 | Admin assigns second admin | New role has admin pages/reports; operation audited; last-admin guard holds |
@@ -393,7 +393,7 @@ Local implementation and acceptance sequence:
 2. Scaffold Next.js and local Supabase; implement migrations, RLS, transactional functions and synthetic seed data. Run automated checks from a clean checkout against the resettable local database.
 3. Apply reviewed migrations to **dev**, configure its private buckets and invitation admission hook, and disable unused password providers. Keep this test dataset separate from prod.
 4. In Google Cloud, configure a Web OAuth client and identity scopes. Google's authorized redirect URI is the **Supabase provider callback URL**. In Supabase, allow `http://localhost:3000/auth/callback` and set the appropriate local Site URL. Store client ID/secret in the provider configuration. Configure localhost origins where required. These provider and application callbacks are distinct; use exact URLs and approved test accounts.
-5. Set `.env.local`, start the app on localhost, and claim the one-time admin grant as `shivamastha@gmail.com`. Test invited/uninvited Google accounts, invitation claim/revocation, admin promotion and active-session access removal. Do not disable approved invitees' OAuth first-login path.
+5. Set `.env.local`, start the app on localhost, and claim the one-time admin grant as `prishi.ai.ventures@gmail.com`. Test invited/uninvited Google accounts, invitation claim/revocation, admin promotion and active-session access removal. Do not disable approved invitees' OAuth first-login path.
 6. Through the local admin UI, create a synthetic festival with configurable days, blocks/flats, rates, committee membership and opening balances. Exercise all finance, own-entry edit/confirm/lock/unlock, overview/detail, meal, guest, catering and event flows.
 7. Run the workbook-import preview, print/XLSX exports, concurrency/idempotency and permission tests. Use local Supabase for destructive test cases and hosted **dev** for real provider integration. A mocked Google login alone is not end-to-end acceptance.
 8. Build Next.js in production mode and run that build locally. Repeat the critical journeys, compare accounting/attendance controls, restore an operator backup into an isolated local database, and record the results.
@@ -404,7 +404,7 @@ Later deployment sequence, after local acceptance and hosting selection:
 1. Back up/configure **prod**, apply the migration set already tested in dev, and configure prod Auth, invitation hook and Storage. Configure the chosen app host's build/runtime and repository integration with **prod** environment variables, then build the release. Keep Supabase Free unless the owner separately changes that decision.
 2. Add the chosen existing-domain subdomain and copy the host's exact DNS records; preserve unrelated root/MX records. Verify TLS and domain routing.
 3. Configure prod's Site URL, exact app callback and Google provider callback/origin/consent-screen settings. Keep test and live data isolated; no broad redirect wildcards.
-4. Bootstrap `shivamastha@gmail.com` in prod, load verified live configuration/opening balances, invite actual committee accounts, and repeat authentication, role/lock, financial and export smoke tests on the hosted app using a controlled launch-check procedure. Do not migrate the dev test dataset or use dev user IDs as prod memberships.
+4. Bootstrap `prishi.ai.ventures@gmail.com` in prod, load verified live configuration/opening balances, invite actual committee accounts, and repeat authentication, role/lock, financial and export smoke tests on the hosted app using a controlled launch-check procedure. Do not migrate the dev test dataset or use dev user IDs as prod memberships.
 5. Verify exports/backups, tag the release, record schema/app versions and begin live use. Estimate this work once the provider is selected.
 
 Migrations are version-controlled and forward-compatible where possible. Run destructive schema changes only after backup and a staged migration plan. An application rollback must remain compatible with the deployed schema; reverting an app deployment does not revert the database. Maintain a maintenance/read-only switch for incidents. Repair posted money with corrective transactions, not ad-hoc row edits.
@@ -428,3 +428,8 @@ At festival end, resolve pending claims, account for all advances/payables, expo
 ## 13. Implementation handoff
 
 The next developer can begin foundation/schema work from this document. Live guest billing is blocked until guest rates and guest-age policy are supplied; live included-meal enrollment needs the household entitlement rule. Domain attachment requires domain/DNS details, Google sign-in needs provider configuration, and backend deployment requires Supabase project access. The initial admin email is confirmed. These are configuration dependencies, not reasons to delay implementing local schema, ledger invariants, role/ownership checks and the committee workflows.
+
+
+## Authentication update — 21 September 2026
+
+The active method is now email OTP through Supabase Auth and Resend, with Google shown as coming soon. This supersedes earlier Google-only instructions. The initial admin is `prishi.ai.ventures@gmail.com`. See [EMAIL_AUTH.md](EMAIL_AUTH.md) for current setup and acceptance steps.

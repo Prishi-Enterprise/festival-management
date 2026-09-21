@@ -1410,7 +1410,40 @@ td input:not([type="radio"]) {
 .nav-link.active {
   border-left: 3px solid #bd902f;
 }
-.hero-panel { background: #10152c; color: #fffefa; border-color: #bd902f; }
-.hero-panel .hero-tag, .hero-panel .hero-art { color: #dfbb65; }
-.hero-panel p { color: #dddde4; }
-.hero-panel .button { background: #dfbb65; color: #10152c; border-color: #dfbb65; }
+.hero-panel {
+  background: #10152c;
+  color: #fffefa;
+  border-color: #bd902f;
+}
+.hero-panel .hero-tag,
+.hero-panel .hero-art {
+  color: #dfbb65;
+}
+.hero-panel p {
+  color: #dddde4;
+}
+.hero-panel .button {
+  background: #dfbb65;
+  color: #10152c;
+  border-color: #dfbb65;
+}
+.otp-form {
+  display: grid;
+  gap: 16px;
+}
+.otp-form p {
+  margin: 0;
+}
+.otp-options {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+.login-divider {
+  text-align: center;
+  color: var(--muted);
+  margin: 20px 0;
+}
+.google-button:disabled {
+  opacity: 0.75;
+}

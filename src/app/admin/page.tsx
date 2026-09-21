@@ -170,7 +170,7 @@ export default async function AdminHome() {
               <span>03</span>
               <div>
                 <strong>Bring in your committee</strong>
-                <p>Invite their Google accounts.</p>
+                <p>Invite their email accounts.</p>
               </div>
             </li>
           </ol>

@@ -19,7 +19,7 @@ This delivery contains the plan, technical design and workbook analysis. Buildin
 - Build and test the complete application on localhost first. Select Vercel or another app host only after local end-to-end acceptance. Domain/hosting decisions do not block local development.
 - Committee-only first release. Committee members enter information on behalf of flats and guests.
 - Google sign-in through Supabase Auth, restricted to Google accounts previously onboarded/invited by an admin.
-- The only initial admin is `shivamastha@gmail.com`. Admins can assign additional admins and manage committee membership.
+- The only initial admin is `prishi.ai.ventures@gmail.com`. Admins can assign additional admins and manage committee membership.
 - Admins configure festival days, blocks/flats and charges on the festival page. Rates remain in the database and ordinary committee members cannot edit them. This latest requirement supersedes the earlier database-only rate-management preference.
 - Committee members can register inflow/expenses and edit their own entries until an admin confirms and locks each entry. Only an admin can unlock it for correction; it then requires confirmation again. General overview is available to committee members; detailed financial reports are admin-only.
 - Under-seven meal contribution is ₹0. These children still count as people attending.
@@ -65,7 +65,7 @@ Illustrative calculation: one flat + two adults + one child aged 8 + one child a
 
 **Festival management:** create/select festival, configure an arbitrary day count with explicit dates, designate Dussehra and included/package meal services, manage blocks and flats, set contribution rates and guest prices, and select participating committee members. Default duration is ten days, but the administrator can change it. Reject overlapping/missing service coverage; do not hardcode a fixed ten-date calendar.
 
-**User management:** onboard/invite an exact Google email, assign it to festivals, see invited/active/deactivated status, revoke access, and promote an existing onboarded account to admin. The first admin is `shivamastha@gmail.com`; additional admin accounts exist only after an explicit admin action. Prevent removal/demotion of the last active admin.
+**User management:** onboard/invite an exact Google email, assign it to festivals, see invited/active/deactivated status, revoke access, and promote an existing onboarded account to admin. The first admin is `prishi.ai.ventures@gmail.com`; additional admin accounts exist only after an explicit admin action. Prevent removal/demotion of the last active admin.
 
 Committee members have a **My entries** page for their inflow and expenses. Ownership is the authenticated creator and cannot be reassigned by editing a request. Entries remain editable by their creator while **Awaiting confirmation**. An admin reviews the entry and uses **Confirm and lock**, making that revision confirmed and read-only. Members can still view their own locked entries but cannot edit or delete them. Only an admin can **Unlock for correction**, with a reason; the entry returns to Awaiting confirmation and the creator can edit it again. Reconfirmation is required after unlocking, even if no edit was made. Admin-created entries use the same explicit confirmation action.
 
@@ -186,3 +186,8 @@ Maintain operator-managed database exports and separate attachment backups for t
 ## Local acceptance and later launch
 
 Complete a local rehearsal covering one flat payment split across cash/UPI, a holder handover, a vendor advance and final bill, a personal reimbursement, a guest cancellation, a free child, a meal-list revision, an event contribution and final reports. Verify member editing before confirmation, rejection after locking, admin unlock/reconfirmation, and admin-only detailed reports. All money and attendance totals must reconcile, and recovery from an operator export must work. Record test results before choosing hosting. Later, repeat domain/auth and critical-flow smoke tests on the selected host before going live; prepare the printed dinner-list fallback then.
+
+
+## Authentication update — 21 September 2026
+
+The active method is now email OTP through Supabase Auth and Resend, with Google shown as coming soon. This supersedes earlier Google-only instructions. The initial admin is `prishi.ai.ventures@gmail.com`. See [EMAIL_AUTH.md](EMAIL_AUTH.md) for current setup and acceptance steps.

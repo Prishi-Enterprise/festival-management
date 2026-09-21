@@ -71,3 +71,8 @@ The owner authorized deploying admin setup before Google OAuth acceptance. Googl
 The security advisor flags seven authenticated SECURITY DEFINER RPCs. These are intentional: each enforces membership/admin authorization internally, uses a fixed empty search path, and denies direct table writes. The before-user-created hook is separately restricted to Supabase Auth.
 
 GitHub Actions is deferred because the connected CLI token lacks workflow scope. Vercel builds main automatically; run `npm run lint`, `npm run typecheck`, `npm test`, and `npm run build` before pushing.
+
+
+## Authentication update — 21 September 2026
+
+The active method is now email OTP through Supabase Auth and Resend, with Google shown as coming soon. This supersedes earlier Google-only instructions. The initial admin is `prishi.ai.ventures@gmail.com`. See [EMAIL_AUTH.md](EMAIL_AUTH.md) for current setup and acceptance steps.

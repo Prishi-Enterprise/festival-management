@@ -11,12 +11,12 @@ export default function AccessPending() {
           isn’t onboarded.
         </h2>
         <p className="muted">
-          Ask an admin to invite this exact Google email, or reactivate your
+          Ask an admin to invite this exact email, or reactivate your
           membership. If you were just invited, sign out and sign in again to
           claim access.
         </p>
         <form action={signOut}>
-          <button className="button">Use another Google account</button>
+          <button className="button">Use another email account</button>
         </form>
       </div>
     </AuthFrame>

@@ -50,3 +50,8 @@ Before release, test Google admission, festival save/reload, invitation/revocati
 Vercel Git is connected. `vercel.json` temporarily disables automatic Git deployments so pushing implementation work does not bypass local acceptance. After acceptance and production environment/Auth setup, enable the intended deployment branches explicitly. Preview deployments must not receive production Supabase credentials. Local Supabase is not reachable from Vercel previews.
 
 Production starts empty. Apply the reviewed SQL migrations to create schema/permissions, then enter approved live configuration. Do not copy development data. See [HOSTING.md](HOSTING.md).
+
+
+## Authentication update — 21 September 2026
+
+The active method is now email OTP through Supabase Auth and Resend, with Google shown as coming soon. This supersedes earlier Google-only instructions. The initial admin is `prishi.ai.ventures@gmail.com`. See [EMAIL_AUTH.md](EMAIL_AUTH.md) for current setup and acceptance steps.

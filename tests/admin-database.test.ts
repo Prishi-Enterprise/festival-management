@@ -16,16 +16,16 @@ beforeAll(async () => {
 afterAll(async () => {
   await db.close();
 });
-describe("Google admission and membership", () => {
+describe("Verified admission and membership", () => {
   it("rejects an uninvited account", async () => {
     await expect(
       asUser(db, OUTSIDER, "select public.claim_membership()"),
     ).rejects.toThrow("invitation");
   });
-  it("rejects non-Google sign-in even for the bootstrap email", async () => {
+  it("rejects an email session without an email identity and OTP proof", async () => {
     await expect(
       asUser(db, ADMIN, "select public.claim_membership()", [], "email"),
-    ).rejects.toThrow("Google");
+    ).rejects.toThrow("verified");
   });
   it("claims exactly one initial admin and is safe to repeat", async () => {
     await bootstrap(db);

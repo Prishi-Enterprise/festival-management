@@ -1,5 +1,5 @@
 import { PGlite } from "@electric-sql/pglite";
-import { readFile } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 export const ADMIN = "11111111-1111-4111-8111-111111111111";
 export const MEMBER = "22222222-2222-4222-8222-222222222222";
 export const OUTSIDER = "33333333-3333-4333-8333-333333333333";
@@ -15,17 +15,14 @@ export async function createDatabase() {
     grant usage on schema public,auth to anon,authenticated,supabase_auth_admin;
     grant execute on all functions in schema auth to anon,authenticated,supabase_auth_admin;
   `);
-  await db.exec(
-    await readFile(
-      new URL(
-        "../supabase/migrations/202609210001_admin_foundation.sql",
-        import.meta.url,
-      ),
-      "utf8",
-    ),
-  );
+  const migrations = new URL("../supabase/migrations/", import.meta.url);
+  for (const file of (await readdir(migrations))
+    .filter((f) => f.endsWith(".sql"))
+    .sort()) {
+    await db.exec(await readFile(new URL(file, migrations), "utf8"));
+  }
   for (const [id, email, name] of [
-    [ADMIN, "shivamastha@gmail.com", "Shivam Bhavsar"],
+    [ADMIN, "prishi.ai.ventures@gmail.com", "Shivam Bhavsar"],
     [MEMBER, "member@example.com", "Committee Member"],
     [OUTSIDER, "outsider@example.com", "Outside User"],
   ]) {
@@ -48,11 +45,19 @@ export async function asUser<T = Record<string, unknown>>(
   sql: string,
   args: unknown[] = [],
   provider = "google",
+  method = "oauth",
 ) {
   return db.transaction(async (tx) => {
     await tx.query(
       `select set_config('request.jwt.claim.sub',$1,true),set_config('request.jwt.claims',$2,true)`,
-      [userId, JSON.stringify({ sub: userId, app_metadata: { provider } })],
+      [
+        userId,
+        JSON.stringify({
+          sub: userId,
+          app_metadata: { provider },
+          amr: [{ method }],
+        }),
+      ],
     );
     await tx.exec("set local role authenticated");
     return tx.query<T>(sql, args);

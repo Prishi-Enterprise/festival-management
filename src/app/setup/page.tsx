@@ -29,10 +29,10 @@ export default function Setup() {
             </p>
           </li>
           <li>
-            <strong>Enable Google sign-in</strong>
+            <strong>Configure email sign-in</strong>
             <p>
-              Configure the Google provider, localhost callback and invitation
-              hook. Restart the app.
+              Configure the email templates and invitation hook. Local codes
+              appear in Mailpit. Restart the app.
             </p>
           </li>
         </ol>

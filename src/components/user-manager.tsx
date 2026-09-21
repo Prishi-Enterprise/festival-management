@@ -141,7 +141,7 @@ export function UserManager({
             <div>
               <h2>Invite to the committee</h2>
               <p className="small muted">
-                Onboard their exact Google email before they sign in.
+                Onboard their exact email before they sign in.
               </p>
             </div>
             <UserPlus size={23} />
@@ -172,7 +172,7 @@ export function UserManager({
           >
             <div className="form-grid">
               <label>
-                Google email
+                email
                 <input
                   type="email"
                   name="email"
@@ -224,7 +224,7 @@ export function UserManager({
             The right access.
           </h2>
           <p>
-            Members use their own Google account. No new passwords to remember.
+            Members use their own email account. No new passwords to remember.
           </p>
           <div className="guide-divider" />
           <p className="small">
@@ -312,7 +312,7 @@ export function UserManager({
             <table>
               <thead>
                 <tr>
-                  <th>Google account</th>
+                  <th>email account</th>
                   <th>Role</th>
                   <th>Status</th>
                   <th>Expires</th>
