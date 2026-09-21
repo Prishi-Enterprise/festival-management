@@ -65,7 +65,7 @@ export async function saveOperation(
         ? error.message
         : error.code === "23505"
           ? "This flat or participant already has a row here. Edit the existing row."
-          : "Check counts, dates and required fields. Attended counts cannot exceed confirmed diners; clear check-in before cancelling.",
+          : "Check counts, dates and required fields. Attended counts cannot exceed confirmed diners; a used pass cannot be cancelled.",
     };
   revalidatePath("/desk", "layout");
   revalidatePath("/admin/festivals", "layout");

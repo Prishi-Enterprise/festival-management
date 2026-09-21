@@ -111,3 +111,7 @@ New passes are created only through **Guest entries & payee dues** / **Guest mea
 The backend saves a new pass and its entry atomically. Existing passes can receive additional linked receipts for split collections. Duplicate retries reuse the same IDs. Check-in does not require receipt confirmation. Pending receipts reserve due amounts; only confirmed receipts reduce the outstanding balance, and unlocking restores the amount owed. Overcollection against a recorded payee due is blocked, including pending receipts. Due amounts can be edited only by their creator before linked payments exist. Admin reports/CSV include the separate guest payee dues; committee members can see their own dues for reconciliation.
 
 Standalone new pass registration is disabled in the UI and database. Existing dev passes are preserved and can be linked to an entry. Cancelled passes cannot admit guests; cancellation does not erase the associated financial obligation. Fee collection is entered manually; automatic rate-based billing remains deferred.
+
+## Attendance corrections
+
+Resident and guest check-ins can only increase for committee members. Admins can reduce counts to correct human errors; before/after counts and actor are audited. An admin can correct historical resident counts downward even if the fixed payment was later unlocked, but cannot increase beyond current eligibility. Stale versions remain rejected. A used guest pass cannot be cancelled until an admin corrects its admitted count to zero.

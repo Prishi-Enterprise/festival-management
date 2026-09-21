@@ -90,7 +90,7 @@ export function AttendanceDesk({
     { name: "note", label: "Notes", max: 300 },
     {
       name: "cancelled",
-      label: "Cancel pass (clear check-in first)",
+      label: "Cancel unused pass",
       type: "checkbox",
     },
   ];
@@ -141,7 +141,8 @@ export function AttendanceDesk({
             </p>
             <p>
               Set the total already admitted for this meal. Remaining quantities
-              update after saving. Concurrent edits require a refresh.
+              update after saving. Committee check-in counts can only increase;
+              admins can correct mistakes. Concurrent edits require a refresh.
             </p>
           </section>
           <section className="panel finance-register">
@@ -184,7 +185,8 @@ export function AttendanceDesk({
                       <td>{a.attended}</td>
                       <td>{Math.max(0, mealTotal(a) - a.attended)}</td>
                       <td>
-                        {a.confirmed && (
+                        {(a.confirmed ||
+                          (member.role === "admin" && a.attended > 0)) && (
                           <OperationForm
                             compact
                             key={`${a.id}-${a.service_id}-${a.version}`}
@@ -200,7 +202,11 @@ export function AttendanceDesk({
                                 name: "attended",
                                 label: `Total admitted ${flat(a.flat_id)}`,
                                 type: "number",
-                                max: mealTotal(a),
+                                max:
+                                  member.role === "admin"
+                                    ? Math.max(mealTotal(a), a.attended)
+                                    : mealTotal(a),
+                                min: member.role === "admin" ? 0 : a.attended,
                                 required: true,
                               },
                             ]}
@@ -333,6 +339,7 @@ export function AttendanceDesk({
                                 label: "Total guests admitted",
                                 type: "number",
                                 max: g.adults + g.children + g.under_seven,
+                                min: member.role === "admin" ? 0 : g.attended,
                                 required: true,
                               },
                             ]}

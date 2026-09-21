@@ -1751,3 +1751,6 @@ input::-webkit-datetime-edit { min-width: 0; padding: 0; }
  .finance-register { padding: 16px; }
  .operation-form, .operation-form label { min-width: 0; }
 }
+
+/* Keep absolutely positioned accessible table labels within their scroll container. */
+.table-scroll { position: relative; }

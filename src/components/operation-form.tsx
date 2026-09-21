@@ -11,6 +11,7 @@ export type Field = {
   options?: { value: string; label: string }[];
   required?: boolean;
   max?: number;
+  min?: number;
   hint?: string;
 };
 export function OperationForm({
@@ -149,11 +150,12 @@ export function OperationForm({
                           : String(value ?? (f.type === "number" ? 0 : ""))
                     }
                     min={
-                      f.name === "sequence"
+                      f.min ??
+                      (f.name === "sequence"
                         ? 1
                         : f.type === "money" || f.type === "number"
                           ? 0
-                          : undefined
+                          : undefined)
                     }
                     max={
                       f.type === "money"

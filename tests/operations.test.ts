@@ -146,6 +146,12 @@ it("fixed enrollment is atomic, idempotent and requires full confirmed contribut
       fixedMeal,
     ]),
   ).rejects.toThrow("exceeds");
+  await expect(
+    asUser(db, MEMBER, "select public.check_in_residents($1,$2,1,1)", [
+      enrollment,
+      fixedMeal,
+    ]),
+  ).rejects.toThrow("cannot be reduced");
   await review(p.id, 2, "unlock");
   d = await data();
   expect(
@@ -254,14 +260,28 @@ it("guest passes enforce service, quantity, cancellation, cutoff and stale-updat
   await expect(
     call("save_guest_booking", { ...g, version: 2, cancelled: true }),
   ).rejects.toThrow();
-  await asUser(db, MEMBER, "select public.check_in_guest($1,$2,2,0)", [
+  await expect(
+    asUser(db, MEMBER, "select public.check_in_guest($1,$2,2,0)", [
+      g.id,
+      fixedMeal,
+    ]),
+  ).rejects.toThrow("cannot be reduced");
+  await asUser(db, ADMIN, "select public.check_in_guest($1,$2,2,1)", [
     g.id,
     fixedMeal,
   ]);
-  await call("save_guest_booking", { ...g, version: 3, cancelled: true });
+  expect((await data()).guests.find((x) => x.id === g.id)?.attended).toBe(1);
+  const unused = { ...guestEntry, id: randomUUID() };
+  await call("save_guest_payment", unused);
+  await call("save_guest_booking", {
+    ...g,
+    id: unused.id,
+    version: 1,
+    cancelled: true,
+  });
   await expect(
-    asUser(db, MEMBER, "select public.check_in_guest($1,$2,4,1)", [
-      g.id,
+    asUser(db, MEMBER, "select public.check_in_guest($1,$2,2,1)", [
+      unused.id,
       fixedMeal,
     ]),
   ).rejects.toThrow("cancelled");
@@ -521,4 +541,33 @@ it("rolls back pass creation if its receipt is invalid and rejects cross-festiva
   await expect(
     call("save_guest_payment", { ...p, id: randomUUID() }, OUTSIDER),
   ).rejects.toThrow();
+});
+
+it("admins can correct resident counts after eligibility changes, with audit history", async () => {
+  const before = (
+    await db.query<{ version: number; attended: number }>(
+      "select version,attended from public.resident_checkins where enrollment_id=$1 and service_id=$2",
+      [enrollment, fixedMeal],
+    )
+  ).rows[0];
+  await asUser(db, ADMIN, "select public.check_in_residents($1,$2,$3,1)", [
+    enrollment,
+    fixedMeal,
+    before.version,
+  ]);
+  expect(
+    (
+      await db.query<{ attended: number }>(
+        "select attended from public.resident_checkins where enrollment_id=$1 and service_id=$2",
+        [enrollment, fixedMeal],
+      )
+    ).rows[0].attended,
+  ).toBe(1);
+  const audit = (
+    await db.query<{ details: { before: number; after: number } }>(
+      "select details from public.audit_events where action='residents.checked_in' and actor_id=$1 order by id desc limit 1",
+      [ADMIN],
+    )
+  ).rows[0];
+  expect(audit.details).toMatchObject({ before: before.attended, after: 1 });
 });
