@@ -1873,3 +1873,5 @@ input::-webkit-datetime-edit { min-width: 0; padding: 0; }
 .rsvp-closed { margin-top: 24px; }
 .rsvp-closed ul { list-style: none; margin: 0; padding: 0; }
 .rsvp-closed li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 16px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+
+.brand-logo.platform-logo { padding: 0; border: 0; background: transparent; border-radius: 12px; aspect-ratio: 1; }

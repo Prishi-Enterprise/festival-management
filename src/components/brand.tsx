@@ -2,19 +2,21 @@
 import type { Society } from "@/lib/societies";
 import { logoSrc } from "@/lib/societies";
 export function Brand({ society }: { society?: Society }) {
-  const src = logoSrc(
-    society?.logo_url ?? null,
-    process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
-  );
+  const src = !society
+    ? "/icon.svg"
+    : logoSrc(
+        society?.logo_url ?? null,
+        process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
+      );
   return (
     <div className="brand">
       {src ? (
         <img
-          className="brand-logo"
+          className={`brand-logo${society ? "" : " platform-logo"}`}
           src={src}
           width={52}
           height={54}
-          alt={`${society?.name} logo`}
+          alt={`${society?.name ?? "Festivals"} logo`}
         />
       ) : (
         <span className="workspace-avatar brand-initial">
