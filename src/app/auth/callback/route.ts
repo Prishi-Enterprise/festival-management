@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
       const { error: claimError } = await supabase.rpc("claim_membership");
-      if (!claimError) return NextResponse.redirect(`${appUrl()}/admin`);
+      if (!claimError) return NextResponse.redirect(`${appUrl()}/societies`);
       return NextResponse.redirect(`${appUrl()}/access-pending`);
     }
   }

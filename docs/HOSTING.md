@@ -39,3 +39,11 @@ Run lint, typecheck, tests and production build before release. Current candidat
 Supabase advisor findings for RPC-only tables without direct policies and intentional SECURITY DEFINER functions were reviewed: direct writes are revoked and authenticated RPCs check membership/role internally. The anonymous guest-pass RPC is intentionally read-only and exposes only bearer-pass event/meal/count/status information, not resident names or finances.
 
 Never commit workbook files, resident exports, credentials or private operational data. This is a public repository.
+
+## Multi-society dev release — production hold
+
+The owner explicitly requested dev-first testing for the society/RSVP changes. Apply migrations 012–015 to Tokyo only and deploy `codex/launch-candidate`; do not merge to main or migrate Mumbai until dev acceptance. Production remains release `33c4d3e`.
+
+Names: Supabase Tokyo **Festival Management Dev**, Mumbai **Festival Management**; one Vercel project **festival-management** with production and preview environments; Resend SMTP key labels **Festival Management Dev** and **Festival Management**. No credentials, project refs or regions change when renamed.
+
+Target canonical domain is `festivals.prishi.in`. During preparation it can point to the current production release; do not update production APP_URL or redirect the old hostname before launch acceptance. At approved cutover, update production APP_URL and Supabase Auth URL/redirect settings, then remove `radhe.prishi.in` from Vercel and GoDaddy DNS entirely, as requested. Re-share existing guest/RSVP links using the new hostname; old links will stop working. The renamed preview branch URL must be allowed in Tokyo Auth callbacks.

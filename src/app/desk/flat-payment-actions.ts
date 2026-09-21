@@ -26,6 +26,10 @@ export async function saveFlatPayment(input: unknown) {
   });
   const roster = z
     .object({
+      contact_phone: z
+        .string()
+        .regex(/^\+[1-9][0-9]{7,14}$/)
+        .optional(),
       members: attendees.optional(),
       member_ids: z.array(z.uuid()).max(100).default([]),
     })
@@ -42,6 +46,32 @@ export async function saveFlatPayment(input: unknown) {
       error: ["P0001", "42501"].includes(error.code)
         ? error.message
         : "Could not save the payment. Refresh and check the selected flat/account.",
+    };
+  revalidatePath("/desk", "layout");
+  return { ok: true };
+}
+
+export async function updateFlatContact(input: unknown) {
+  const parsed = z
+    .object({
+      id: z.uuid(),
+      phone: z.string().regex(/^\+[1-9][0-9]{7,14}$/),
+      rotate: z.boolean(),
+    })
+    .safeParse(input);
+  if (!parsed.success)
+    return { ok: false, error: "Use a valid phone number with country code." };
+  const { supabase } = await requireMember(true);
+  const { error } = await supabase.rpc("update_flat_contact", {
+    p_enrollment: parsed.data.id,
+    p_phone: parsed.data.phone,
+    p_rotate: parsed.data.rotate,
+  });
+  if (error)
+    return {
+      ok: false,
+      error:
+        error.code === "P0001" ? error.message : "Could not update contact.",
     };
   revalidatePath("/desk", "layout");
   return { ok: true };

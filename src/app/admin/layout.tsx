@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { themeStyle } from "@/lib/societies";
 import { BackNavigation } from "@/components/back-navigation";
 import { Brand } from "@/components/brand";
 import { Nav } from "@/components/nav";
@@ -9,20 +11,23 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { member } = await requireMember(true);
+  const { member, society, superadmin } = await requireMember(true);
   return (
-    <div className="app-shell">
+    <div className="app-shell" style={themeStyle(society.theme_color)}>
       <aside className="sidebar">
-        <Brand />
+        <Brand society={society} />
         <div className="workspace">
-          <span className="workspace-avatar">R</span>
+          <span className="workspace-avatar">{society.name.slice(0, 1)}</span>
           <div>
-            <strong>Radhe Society</strong>
+            <strong>{society.name}</strong>
             <small>Festival workspace</small>
           </div>
         </div>
         <p className="nav-label">WORKSPACE</p>
         <Nav />
+        <Link className="nav-link" href="/societies">
+          {superadmin ? "Manage societies" : "Switch society"}
+        </Link>
         <div className="sidebar-bottom">
           <div className="admin-marker">
             <ShieldCheck size={17} /> Administrator
@@ -60,7 +65,7 @@ export default async function AdminLayout({
           {children}
         </main>
         <footer className="app-footer">
-          RADHE FESTIVAL DESK <span>Made for our community.</span>
+          {society.name} · FESTIVAL DESK <span>Made for our community.</span>
         </footer>
       </div>
     </div>

@@ -1,3 +1,5 @@
+import { RsvpContacts } from "@/components/rsvp-contacts";
+import { appUrl } from "@/lib/config";
 import { notFound } from "next/navigation";
 import { z } from "zod";
 import { requireMember } from "@/lib/auth";
@@ -15,5 +17,14 @@ export default async function Page({
     p_festival: id,
   });
   if (error) throw new Error("Could not load attendance.");
-  return <AttendanceDesk data={data as OperationsData} member={member} />;
+  return (
+    <>
+      <AttendanceDesk data={data as OperationsData} member={member} />
+      <RsvpContacts
+        data={data as OperationsData}
+        admin={member.role === "admin"}
+        baseUrl={appUrl()}
+      />
+    </>
+  );
 }

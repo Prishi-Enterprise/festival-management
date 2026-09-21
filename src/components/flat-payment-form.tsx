@@ -115,7 +115,15 @@ export function FlatPaymentForm({
                   occurred_on: fd.get("date"),
                   description: fd.get("description"),
                   reference: fd.get("reference"),
-                  ...(enrollment ? {} : { members }),
+                  ...(enrollment
+                    ? {}
+                    : {
+                        members,
+                        contact_phone: String(fd.get("contact_phone")).replace(
+                          /[\s()-]/g,
+                          "",
+                        ),
+                      }),
                   member_ids: fixed ? [] : selected,
                 });
                 if (!result.ok) {
@@ -225,6 +233,23 @@ export function FlatPaymentForm({
                 />
               </label>
             </div>
+            {fixed && !enrollment && (
+              <label>
+                Flat contact phone number
+                <input
+                  name="contact_phone"
+                  type="tel"
+                  required
+                  placeholder="+919876543210"
+                  pattern="[+]?[0-9 ()-]{8,20}"
+                  maxLength={20}
+                />
+                <small>
+                  Include country code (+91 for India). Used to share this
+                  flat’s private daily RSVP link.
+                </small>
+              </label>
+            )}
             <h2>
               {fixed
                 ? "Fixed attendees / members"

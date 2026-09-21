@@ -1,27 +1,22 @@
-import Image from "next/image";
+import { Brand } from "@/components/brand";
 import Link from "next/link";
 import "./welcome.css";
 export default function Home() {
   return (
     <div className="landing page">
       <header className="masthead">
-        <Link className="wordmark" href="/" aria-label="Radhe Infinity home">
-          RADHE <span>INFINITY</span>
+        <Link className="wordmark" href="/" aria-label="Festivals home">
+          FESTIVALS <span>BY PRISHI</span>
         </Link>
         <span className="location">OUR SOCIETY. OUR CELEBRATIONS.</span>
       </header>
       <main>
         <section className="welcome" aria-labelledby="welcome-title">
           <div className="logo-frame">
-            <Image
-              src="/radhe-logo.jpg"
-              width={342}
-              height={358}
-              alt="Radhe Infinity Co-operative Housing Service Society Ltd. — gold R, infinity symbol and peacock feather"
-            />
+            <Brand />
           </div>
           <div className="eyebrow">
-            <span></span> WELCOME TO RADHE INFINITY <span></span>
+            <span></span> WELCOME TO YOUR FESTIVAL DESK <span></span>
           </div>
           <h1 id="welcome-title">
             Together is where
@@ -32,7 +27,7 @@ export default function Home() {
             Our traditions. Our people. Our shared moments.
             <br />A shared home for our community’s celebrations.
           </p>
-          <Link className="status" href="/admin">
+          <Link className="status" href="/societies">
             Open festival desk <span aria-hidden="true">→</span>
           </Link>
         </section>
@@ -51,9 +46,9 @@ export default function Home() {
         </div>
       </main>
       <footer>
-        <span>RADHE INFINITY</span>
+        <span>FESTIVALS BY PRISHI</span>
         <span lang="gu">સાથે મળીને, દરેક ઉજવણી.</span>
-        <span>radhe.prishi.in</span>
+        <span>festivals.prishi.in</span>
       </footer>
     </div>
   );

@@ -45,7 +45,7 @@ export async function emailLogin(
       };
     const { error: claimError } = await supabase.rpc("claim_membership");
     if (claimError) redirect("/access-pending");
-    redirect("/admin");
+    redirect("/societies");
   }
   // The Auth admission hook rejects uninvited new accounts; never expose the invite list.
   const { error } = await supabase.auth.signInWithOtp({

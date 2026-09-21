@@ -1,3 +1,4 @@
+import { themeStyle } from "@/lib/societies";
 import { FestivalNavigation } from "@/components/festival-navigation";
 import { BackNavigation } from "@/components/back-navigation";
 import Link from "next/link";
@@ -9,13 +10,16 @@ export default async function DeskLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { member } = await requireMember();
+  const { member, society, superadmin } = await requireMember();
   return (
-    <div className="operations-shell">
+    <div className="operations-shell" style={themeStyle(society.theme_color)}>
       <header className="operations-header">
-        <Brand />
+        <Brand society={society} />
         <nav aria-label="Festival desk">
           <Link href="/desk">Festival desk</Link>
+          <Link href="/societies">
+            {superadmin ? "Manage societies" : "Switch society"}
+          </Link>
           {member.role === "admin" && <Link href="/admin">Administration</Link>}
           <form action="/auth/signout" method="post">
             <button className="text-button">Sign out</button>

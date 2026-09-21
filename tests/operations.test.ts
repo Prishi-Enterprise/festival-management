@@ -41,6 +41,7 @@ function receipt(category = "Fixed contribution", amount = 250000) {
     kind: "collection",
     category,
     category_other: "",
+    contact_phone: "+919876543210",
     flat_id: flat,
     account_id: cash,
     to_account_id: null,
@@ -361,6 +362,7 @@ it("events enforce categories, ownership, duplicate enrollment and closed regist
     service_date: "2026-10-11",
     category: "Mahila Aarati",
     category_other: "",
+    contact_phone: "+919876543210",
     registration_closed: false,
   };
   await expect(call("save_festival_event", event)).rejects.toThrow();
@@ -373,6 +375,7 @@ it("events enforce categories, ownership, duplicate enrollment and closed regist
     name: "Test participant",
     category: "Adult",
     category_other: "",
+    contact_phone: "+919876543210",
     sequence: 1,
     theme: "",
     note: "",

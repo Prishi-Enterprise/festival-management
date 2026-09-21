@@ -173,6 +173,12 @@ export type Allocation = {
   version: number;
 };
 export type OperationsData = {
+  rsvps: {
+    enrollment_id: string;
+    service_date: string;
+    attendees: number;
+    version: number;
+  }[];
   enrollments: Enrollment[];
   guests: Guest[];
   package_members: {
@@ -216,6 +222,8 @@ export type Resident = {
   age_group: "adult" | "child" | "under_seven";
 };
 export type Enrollment = {
+  contact_phone: string | null;
+  rsvp_code: string;
   id: string;
   festival_id: string;
   flat_id: string;
@@ -251,3 +259,14 @@ export type GuestDue = {
   confirmed: number;
   pending: number;
 };
+
+// RSVP is a planning count, not payment eligibility or recorded check-in.
+export function expectedDiners(d: OperationsData, a: Attendance) {
+  const e = d.enrollments.find((e) => e.id === a.id);
+  if (!e) return mealTotal(a);
+  const date = d.services.find((s) => s.id === a.service_id)?.service_date;
+  const count =
+    d.rsvps?.find((r) => r.enrollment_id === e.id && r.service_date === date)
+      ?.attendees ?? e.members.length;
+  return Math.min(count, mealTotal(a));
+}

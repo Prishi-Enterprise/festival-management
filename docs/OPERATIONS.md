@@ -115,3 +115,15 @@ Standalone new pass registration is disabled in the UI and database. Existing de
 ## Attendance corrections
 
 Resident and guest check-ins can only increase for committee members. Admins can reduce counts to correct human errors; before/after counts and actor are audited. An admin can correct historical resident counts downward even if the fixed payment was later unlocked, but cannot increase beyond current eligibility. Stale versions remain rejected. A used guest pass cannot be cancelled until an admin corrects its admitted count to zero.
+
+## Society hierarchy and daily RSVP (dev candidate)
+
+Platform super admin `sb@prishi.in` uses `/societies` to add/edit society names and logos, then opens a society and uses People & access to invite its admins. Society admins manage only that society's blocks, festivals, committee and reports. One person can hold different roles in different societies. Switching societies never grants access; database checks and RLS validate the selected society for every operation. Existing Radhe records retain their society and identifiers.
+
+New fixed registrations require a contact phone in international format, e.g. `+919876543210`. Existing enrollments need an admin to add the contact under Attendance & guests → Flat contacts & daily RSVP. Committee can copy the private link or open a prefilled WhatsApp message to share manually. The application sends no WhatsApp/SMS messages automatically.
+
+A private `/rsvp/<unguessable-code>` link requires no sign-in. Anyone holding it can update that flat's daily headcount, from zero to its registered fixed-member count. All registered members are included by default. The public page shows a masked phone suffix, flat and festival, but no resident names, full phone or finances. Admins can replace the link and invalidate the old one. Closed/past dates reject changes; stale edits require refresh. A day remains open while at least one served meal accepts bookings.
+
+RSVP is separate from payment eligibility and check-in. Catering forecast uses the smaller of daily RSVP and the number eligible for that meal, plus active guests. Package meals still require eligible package members; a headcount RSVP cannot grant a package or guest pass. Committee cannot reduce saved check-ins; admins still can correct them.
+
+Logos upload to Supabase Storage's public `society-logos` bucket (public branding only). Uploads are restricted to the platform super admin, converted to PNG up to 256px and 128 KB, and stored with immutable UUID filenames. A representative saturated logo color supplies accents; absent/removed logos use the society initial and existing gold/navy theme. Obsolete logo objects remain for rollback and can be cleaned separately by an operator.

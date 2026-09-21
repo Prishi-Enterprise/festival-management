@@ -8,7 +8,7 @@ import { PrintButton } from "./print-button";
 import {
   eventCategories,
   participantCategories,
-  mealTotal,
+  expectedDiners,
   serviceLabel,
   type OperationsData,
   type Participant,
@@ -72,7 +72,7 @@ export function OperationsDesk({
       }),
     );
   const confirmed = attendance.filter((a) => a.confirmed);
-  const expected = confirmed.reduce((n, a) => n + mealTotal(a), 0);
+  const expected = confirmed.reduce((n, a) => n + expectedDiners(d, a), 0);
   const checked = confirmed.reduce((n, a) => n + a.attended, 0);
   const participants = d.participants.filter((p) => p.event_id === event?.id);
   const active = participants.filter((p) => !p.cancelled);
@@ -695,7 +695,7 @@ function CateringSummary({ data: d }: { data: OperationsData }) {
                   <td>
                     {d.attendance
                       .filter((a) => a.service_id === s.id && a.confirmed)
-                      .reduce((n, a) => n + mealTotal(a), 0)}
+                      .reduce((n, a) => n + expectedDiners(d, a), 0)}
                   </td>
                   <td>
                     {c.ordered} / {c.served} / {c.billed}

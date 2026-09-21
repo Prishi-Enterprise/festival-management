@@ -20,7 +20,7 @@ export function AuthFrame({ children }: { children: React.ReactNode }) {
           </p>
         </div>
         <footer>
-          Radhe Society <span>•</span> Together, every year.
+          Our communities <span>•</span> Together, every year.
         </footer>
       </section>
       <section className="auth-content">{children}</section>

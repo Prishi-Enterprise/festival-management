@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { OperationForm, type Field } from "./operation-form";
 import {
   mealTotal,
+  expectedDiners,
   serviceLabel,
   type OperationsData,
   type Guest,
@@ -137,7 +138,10 @@ export function AttendanceDesk({
             </label>
             <p>
               <strong>{expected} eligible diners</strong> ·{" "}
-              {rows.reduce((n, a) => n + a.attended, 0)} checked in
+              {rows
+                .filter((a) => a.confirmed)
+                .reduce((n, a) => n + expectedDiners(d, a), 0)}{" "}
+              RSVPed · {rows.reduce((n, a) => n + a.attended, 0)} checked in
             </p>
             <p>
               Set the total already admitted for this meal. Remaining quantities

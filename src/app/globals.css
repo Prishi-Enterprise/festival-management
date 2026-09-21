@@ -1754,3 +1754,37 @@ input::-webkit-datetime-edit { min-width: 0; padding: 0; }
 
 /* Keep absolutely positioned accessible table labels within their scroll container. */
 .table-scroll { position: relative; }
+
+.society-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 310px), 1fr));
+  gap: 20px;
+}
+.brand strong {
+  overflow-wrap: anywhere;
+  white-space: normal;
+  line-height: 1.2;
+}
+.brand-initial {
+  width: 52px;
+  height: 54px;
+  font-size: 28px;
+  flex-shrink: 0;
+}
+.brand-logo {
+  object-fit: contain;
+}
+.rsvp-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+}
+.rsvp-card input {
+  width: 100%;
+}
+.rsvp-contact {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}

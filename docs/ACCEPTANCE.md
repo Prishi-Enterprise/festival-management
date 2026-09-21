@@ -20,3 +20,13 @@ Current constraints: the first fixed attendee list is immutable; additional peop
 Record issues with the page, flat/meal/event, steps and expected result. After approval, deploy a fresh production build against Mumbai and verify `sb@prishi.in` sign-in. Development transactions are not copied.
 
 - [ ] Create a guest entry with **Payee owes fee — collect later**. Verify the pass admits guests before payment confirmation, and no cash is added. Record partial cash/online settlement against the existing pass, confirm it as admin, and check the outstanding due decreases. Unlocking should restore the outstanding amount. Check the separate payee-dues section in admin report and CSV.
+
+## Multi-society / RSVP candidate
+
+- Sign in as official platform admin, create a society without a logo, verify its initial and default theme; upload a logo and verify Supabase Storage and extracted accent.
+- Open society, add blocks/flats, invite a society admin. Verify that admin cannot create/edit societies or read another society's records/reports, even through RPC or a spoofed society header.
+- Invite the same account to a second society with a different role; ensure switching and later demotion affect only the selected society.
+- Register a fixed receipt with phone and residents; open private RSVP in a signed-out browser. Defaults equal registered residents. Save zero and a valid count, reject above maximum; confirm catering forecast updates without changing eligibility or check-ins.
+- For an old enrollment, add its contact as admin. Replace link and confirm old URL stops working. Check closed dates and simultaneous/stale updates.
+- Verify society selection, branding, logo upload and RSVP at phone/tablet widths.
+- After owner dev approval: apply migrations to Mumbai, update auth/domain configuration, deploy main, verify official admin and remove the old domain from Vercel and DNS (no redirect).
