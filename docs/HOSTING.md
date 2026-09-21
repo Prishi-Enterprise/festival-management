@@ -47,3 +47,13 @@ The owner explicitly requested dev-first testing for the society/RSVP changes. A
 Names: Supabase Tokyo **Festival Management Dev**, Mumbai **Festival Management**; one Vercel project **festival-management** with production and preview environments; Resend SMTP key labels **Festival Management Dev** and **Festival Management**. No credentials, project refs or regions change when renamed.
 
 Target canonical domain is `festivals.prishi.in`. During preparation it can point to the current production release; do not update production APP_URL or redirect the old hostname before launch acceptance. At approved cutover, update production APP_URL and Supabase Auth URL/redirect settings, then remove `radhe.prishi.in` from Vercel and GoDaddy DNS entirely, as requested. Re-share existing guest/RSVP links using the new hostname; old links will stop working. The renamed preview branch URL must be allowed in Tokyo Auth callbacks.
+
+## Approved multi-society production release — 21 September 2026
+
+The owner approved release `490b85e` to production after dev testing. Migrations 012–019 are now applied to Mumbai (`gfxtoblbiravcdwgerxw`, `ap-south-1`). This approval supersedes the production hold above. The existing society is Radhe Infinity; `sb@prishi.in` is both its active society admin and the sole platform super admin. The two existing committee memberships and all three festival assignments are preserved. No committee email addresses or private records are committed here.
+
+The production check found one festival and 224 flats, with no finance entries, enrollments, guest bookings or catering records. The owner specifically requested discarding the 30 demo meal-calendar rows; only those rows were removed, with an audit event. The owner will configure named meals, resident coverage and guest packages anew. Existing festival settings and memberships remain.
+
+Production APP_URL is `https://festivals.prishi.in`; its exact Auth callback was added before changing the Site URL. Vercel builds main with the existing Mumbai production environment. Old-hostname removal from Vercel, DNS and the Auth callback allowlist is part of the same cutover, after checking the new live site. No redirect from `radhe.prishi.in` is desired.
+
+Validation for the approved application: 70 tests, lint and production build passed. Guest packages cover one date with selected meals; admissions are independent for each meal. Issued packages retain their purchased price and meal selection. Child age bounds are configurable before attendee registration, with the existing defaults preserved. Unused meals can be removed; linked meals retain their identity when renamed.
