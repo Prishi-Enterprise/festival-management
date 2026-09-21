@@ -18,17 +18,37 @@ export function ResidentRsvp({
   maximum: number;
   days: RsvpDay[];
 }) {
+  const openDays = days.filter((day) => day.open);
+  const closedDays = days.filter((day) => !day.open);
   return (
-    <div className="rsvp-grid">
-      {days.map((day) => (
-        <RsvpRow
-          key={`${day.date}-${day.version}`}
-          code={code}
-          maximum={maximum}
-          day={day}
-        />
-      ))}
-    </div>
+    <>
+      <div className="rsvp-grid">
+        {openDays.map((day) => (
+          <RsvpRow
+            key={`${day.date}-${day.version}`}
+            code={code}
+            maximum={maximum}
+            day={day}
+          />
+        ))}
+      </div>
+      {!openDays.length && <p>No days are currently open for RSVP.</p>}
+      {closedDays.length > 0 && (
+        <section className="rsvp-closed" aria-labelledby="closed-rsvp-heading">
+          <h2 id="closed-rsvp-heading">Closed RSVP days</h2>
+          <ul>
+            {closedDays.map((day) => (
+              <li key={day.date}>
+                <span>
+                  <strong>{day.label}</strong> · {day.date}
+                </span>
+                <span className="muted small">RSVP closed</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+    </>
   );
 }
 function RsvpRow({
