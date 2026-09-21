@@ -39,9 +39,43 @@ export function FlatPaymentForm({
       </p>
       <section className="panel finance-form">
         <form
+          noValidate
           onSubmit={(event) => {
             event.preventDefault();
-            const fd = new FormData(event.currentTarget);
+            setMessage("");
+            const form = event.currentTarget;
+            if (!accounts.length) {
+              setMessage(
+                "No receiving account is available. Ask an admin to add a cash or online account under Money holders & payees in the finance desk.",
+              );
+              return;
+            }
+            if (!form.checkValidity()) {
+              const invalid = form.querySelector<
+                HTMLInputElement | HTMLSelectElement
+              >(":invalid");
+              const label =
+                invalid?.closest("label")?.childNodes[0]?.textContent?.trim() ||
+                "Required field";
+              setMessage(
+                `${label}: ${invalid?.validationMessage || "Check this field."}`,
+              );
+              form.reportValidity();
+              return;
+            }
+            if (!enrollment && (!fixed || !members.length)) {
+              setMessage(
+                fixed
+                  ? "Add at least one fixed attendee before saving the contribution."
+                  : "Record the fixed contribution and its attendees before adding a meal package.",
+              );
+              return;
+            }
+            if (!fixed && !selected.length) {
+              setMessage("Select at least one resident for the meal package.");
+              return;
+            }
+            const fd = new FormData(form);
             let amount: number;
             try {
               amount = rupeesToPaise(String(fd.get("amount")));
@@ -51,38 +85,39 @@ export function FlatPaymentForm({
             }
             request.current ??= crypto.randomUUID();
             start(async () => {
-              const result = await saveFlatPayment({
-                id: entry?.id ?? request.current,
-                festival_id: d.festival.id,
-                version: entry?.version ?? 0,
-                kind: "collection",
-                category: purpose,
-                category_other: "",
-                flat_id: flat,
-                account_id: fd.get("account"),
-                to_account_id: null,
-                vendor_id: null,
-                amount,
-                occurred_on: fd.get("date"),
-                description: fd.get("description"),
-                reference: fd.get("reference"),
-                ...(enrollment ? {} : { members }),
-                member_ids: fixed ? [] : selected,
-              });
-              if (!result.ok) {
-                setMessage(result.error ?? "Could not save.");
-                return;
+              try {
+                const result = await saveFlatPayment({
+                  id: entry?.id ?? request.current,
+                  festival_id: d.festival.id,
+                  version: entry?.version ?? 0,
+                  kind: "collection",
+                  category: purpose,
+                  category_other: "",
+                  flat_id: flat,
+                  account_id: fd.get("account"),
+                  to_account_id: null,
+                  vendor_id: null,
+                  amount,
+                  occurred_on: fd.get("date"),
+                  description: fd.get("description"),
+                  reference: fd.get("reference"),
+                  ...(enrollment ? {} : { members }),
+                  member_ids: fixed ? [] : selected,
+                });
+                if (!result.ok) {
+                  setMessage(result.error ?? "Could not save.");
+                  return;
+                }
+                router.push(`/desk/${d.festival.id}`);
+                router.refresh();
+              } catch {
+                setMessage(
+                  "The save could not be completed. Check your connection and try again. Retrying this form will not duplicate the receipt.",
+                );
               }
-              router.push(`/desk/${d.festival.id}`);
-              router.refresh();
             });
           }}
         >
-          {message && (
-            <p className="notice error" role="alert">
-              {message}
-            </p>
-          )}
           <fieldset disabled={pending}>
             <div className="form-grid">
               <label>
@@ -289,15 +324,12 @@ export function FlatPaymentForm({
               meals additionally require confirmed package enrollment. This form
               records money received; it does not create automatic bills.
             </p>
-            <button
-              className="button"
-              disabled={
-                pending ||
-                !flat ||
-                (!enrollment && (!fixed || !members.length)) ||
-                (!fixed && !selected.length)
-              }
-            >
+            {message && (
+              <p className="notice error" role="alert">
+                {message}
+              </p>
+            )}
+            <button type="submit" className="button" disabled={pending}>
               {pending ? "Saving…" : "Save for confirmation"}
             </button>
           </fieldset>
