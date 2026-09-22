@@ -1886,3 +1886,31 @@ input::-webkit-datetime-edit { min-width: 0; padding: 0; }
 
 .pass-share { margin-block: 0.5rem; overflow-wrap: anywhere; }
 @media print { .pass-share { display: none; } }
+
+/* Keep guest pass sharing and check-in actions in consistent groups. */
+.pass-share-actions, .guest-entry-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
+.pass-share-actions .button { padding: .55rem .75rem; font-size: .85rem; min-height: 2.75rem; }
+.guest-pass-table { table-layout: fixed; width: 100%; }
+.guest-pass-table th:first-child { width: 38%; }
+.guest-pass-table th:nth-child(2) { width: 10%; }
+.guest-pass-table th:nth-child(3) { width: 17%; }
+.guest-pass-table th:last-child { width: 35%; }
+.guest-pass-table td { vertical-align: top; }
+.guest-pass-code { font-size: .8rem; margin-top: .6rem; color: var(--muted); }
+.guest-pass-code summary { cursor: pointer; }
+.guest-entry-actions { margin-bottom: .75rem; }
+.guest-entry-actions .text-button { padding: .25rem 0; margin-right: .75rem; }
+.guest-checkin .operation-inline { min-width: 0; }
+.guest-checkin .operation-inline fieldset { display: flex; flex-wrap: wrap; gap: .6rem; align-items: end; }
+.guest-checkin .operation-inline .entry-actions { margin: 0; flex: 1 1 9rem; }
+.guest-checkin .operation-inline label { margin: 0; }
+.guest-checkin .operation-inline input { width: 100%; }
+.guest-checkin .operation-inline button { margin: 0; min-height: 2.75rem; }
+@media (max-width: 900px) {
+  .guest-pass-table thead { display: none; }
+  .guest-pass-table, .guest-pass-table tbody { display: block; min-width: 0; }
+  .guest-pass-table .guest-pass-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 1rem 0; border-bottom: 1px solid var(--border); gap: .75rem; }
+  .guest-pass-table td { display: block; border: 0; padding: 0; min-width: 0; }
+  .guest-pass-table td:first-child, .guest-pass-table td:last-child { grid-column: 1 / -1; }
+  .guest-pass-table td[data-label]::before { content: attr(data-label); display: block; font-size: .8rem; color: var(--muted); margin-bottom: .25rem; }
+}

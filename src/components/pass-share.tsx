@@ -4,17 +4,29 @@ import { useState } from "react";
 export function PassShare({
   url,
   festival,
+  showOpen = false,
 }: {
   url: string;
   festival: string;
+  showOpen?: boolean;
 }) {
   const [message, setMessage] = useState("");
   return (
     <div className="pass-share">
-      <div className="entry-actions">
+      <div className="pass-share-actions">
+        {showOpen && (
+          <a
+            className="button secondary"
+            href={url}
+            target="_blank"
+            rel="noreferrer"
+          >
+            Open pass
+          </a>
+        )}
         <button
           type="button"
-          className="text-button"
+          className="button secondary"
           onClick={async () => {
             try {
               await navigator.clipboard.writeText(url);
@@ -27,7 +39,7 @@ export function PassShare({
           Copy pass link
         </button>
         <a
-          className="text-link"
+          className="button secondary"
           target="_blank"
           rel="noreferrer"
           href={`https://wa.me/?text=${encodeURIComponent(`Your guest pass for ${festival}: ${url}`)}`}

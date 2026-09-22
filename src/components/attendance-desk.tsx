@@ -339,7 +339,7 @@ export function AttendanceDesk({
               Record guest entry & create pass
             </Link>
             <div className="table-scroll">
-              <table>
+              <table className="guest-pass-table">
                 <thead>
                   <tr>
                     <th>Host flat / pass</th>
@@ -350,24 +350,20 @@ export function AttendanceDesk({
                 </thead>
                 <tbody>
                   {guestList.items.map((g) => (
-                    <tr key={g.id}>
+                    <tr key={g.id} className="guest-pass-row">
                       <td>
                         {flat(g.flat_id)}
-                        <small>
-                          <Link
-                            href={`/guest-pass/${g.pass_code}`}
-                            target="_blank"
-                          >
-                            Open guest pass
-                          </Link>
-                        </small>
                         {!g.cancelled && (
                           <PassShare
+                            showOpen
                             url={`${baseUrl}/guest-pass/${g.pass_code}`}
                             festival={d.festival.name}
                           />
                         )}
-                        <small>{g.pass_code}</small>
+                        <details className="guest-pass-code">
+                          <summary>Pass code</summary>
+                          <small>{g.pass_code}</small>
+                        </details>
                         <small>
                           {g.payment_status === "confirmed"
                             ? "Receipt confirmed"
@@ -378,33 +374,35 @@ export function AttendanceDesk({
                                 : "No active linked receipt"}
                         </small>
                       </td>
-                      <td>
+                      <td data-label="Registered">
                         {g.adults + g.children + g.under_seven}
                         {g.cancelled ? " · Cancelled" : ""}
                       </td>
-                      <td>
+                      <td data-label="Admitted / remaining">
                         {g.attended} /{" "}
                         {g.cancelled
                           ? 0
                           : g.adults + g.children + g.under_seven - g.attended}
                       </td>
-                      <td>
-                        {!g.cancelled && (
-                          <Link
-                            className="text-button"
-                            href={`/desk/${d.festival.id}/guest-payments?guest=${g.id}`}
-                          >
-                            Record linked payment
-                          </Link>
-                        )}
-                        {g.created_by === member.user_id && (
-                          <button
-                            className="text-button"
-                            onClick={() => setEditing(g)}
-                          >
-                            Edit registration
-                          </button>
-                        )}
+                      <td className="guest-checkin">
+                        <div className="guest-entry-actions">
+                          {!g.cancelled && (
+                            <Link
+                              className="text-button"
+                              href={`/desk/${d.festival.id}/guest-payments?guest=${g.id}`}
+                            >
+                              Record linked payment
+                            </Link>
+                          )}
+                          {g.created_by === member.user_id && (
+                            <button
+                              className="text-button"
+                              onClick={() => setEditing(g)}
+                            >
+                              Edit registration
+                            </button>
+                          )}
+                        </div>
                         {!g.cancelled && (
                           <OperationForm
                             compact
