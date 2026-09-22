@@ -1,3 +1,5 @@
+import { PassQr } from "@/components/pass-qr";
+import { appUrl } from "@/lib/config";
 import { notFound } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
@@ -37,6 +39,37 @@ export default async function Page({
         is a planning count; meal access still follows fixed-contribution and
         package eligibility.
       </p>
+      {data.attendance_code && (
+        <section className="panel resident-rsvp-pass">
+          <h2>Your household attendance pass</h2>
+          <p>
+            Bring this QR to the meal entrance. One QR covers all registered
+            members of this flat across eligible meals; the committee selects
+            the day and meal when checking you in.
+          </p>
+          <p className="notice">
+            {data.eligible
+              ? "Fixed contribution confirmed. Package meals additionally require confirmed package payment."
+              : "Awaiting confirmed fixed contribution. This QR does not enable admission until payment is confirmed."}
+          </p>
+          <PassQr url={`${appUrl()}/resident-pass/${data.attendance_code}`} />
+          <div className="form-actions">
+            <a
+              className="button secondary"
+              href={`${appUrl()}/resident-pass/${data.attendance_code}`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Open / print attendance pass
+            </a>
+          </div>
+          <p className="tiny">
+            RSVP helps plan meal quantities. Changing RSVP does not replace this
+            QR or record attendance. Share the attendance pass when needed, and
+            keep this RSVP editing link private.
+          </p>
+        </section>
+      )}
       <ResidentRsvp code={code} maximum={data.maximum} days={data.days} />
     </main>
   );

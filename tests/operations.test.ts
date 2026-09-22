@@ -703,3 +703,46 @@ it("resident QR uses a separate code, exposes no contact or member names, and ke
     ).rows[0].v,
   );
 });
+
+it("private RSVP exposes the household attendance QR but the QR cannot edit RSVP", async () => {
+  await db.query(
+    "update flat_enrollments set contact_phone='+919000000000' where id=$1",
+    [enrollment],
+  );
+  const { attendance_code, rsvp_code } = (
+    await db.query<{ attendance_code: string; rsvp_code: string }>(
+      "select attendance_code,rsvp_code from flat_enrollments where id=$1",
+      [enrollment],
+    )
+  ).rows[0];
+  const result = await db.transaction(async (tx) => {
+    await tx.exec("set local role anon");
+    return (
+      await tx.query<{
+        v: { attendance_code: string; eligible: boolean; days: unknown[] };
+      }>("select resident_rsvp($1) v", [rsvp_code])
+    ).rows[0].v;
+  });
+  expect(result.attendance_code).toBe(attendance_code);
+  expect(result.days).toBeInstanceOf(Array);
+  const pass = (
+    await db.query<{ v: Record<string, unknown> }>(
+      "select resident_pass($1) v",
+      [attendance_code],
+    )
+  ).rows[0].v;
+  expect(result.eligible).toBe(pass.eligible);
+  expect(pass).not.toHaveProperty("rsvp_code");
+  expect(
+    (
+      await db.query<{ v: unknown }>("select resident_rsvp($1) v", [
+        attendance_code,
+      ])
+    ).rows[0].v,
+  ).toBeNull();
+  await expect(
+    db.query("select save_resident_rsvp($1,'2026-10-11',1,0)", [
+      attendance_code,
+    ]),
+  ).rejects.toThrow("not available");
+});
