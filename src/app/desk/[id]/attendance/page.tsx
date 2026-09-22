@@ -1,4 +1,3 @@
-import { RsvpContacts } from "@/components/rsvp-contacts";
 import { appUrl } from "@/lib/config";
 import { notFound } from "next/navigation";
 import { z } from "zod";
@@ -22,11 +21,6 @@ export default async function Page({
       <AttendanceDesk
         data={data as OperationsData}
         member={member}
-        baseUrl={appUrl()}
-      />
-      <RsvpContacts
-        data={data as OperationsData}
-        admin={member.role === "admin"}
         baseUrl={appUrl()}
       />
     </>

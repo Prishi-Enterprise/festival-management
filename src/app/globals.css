@@ -1991,3 +1991,15 @@ input::-webkit-datetime-edit { min-width: 0; padding: 0; }
 .guest-pass-card .guest-pass-menu-content .pass-share-actions .button { text-align: left; justify-content: flex-start; }
 .resident-pass-card { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .resident-pass-card .guest-pass-heading, .resident-pass-card .guest-checkin { grid-column: 1 / -1; }
+
+.resident-card-contact { grid-column: 1 / -1; margin: 0; overflow-wrap: anywhere; }
+.guest-pass-menu-content { max-height: min(32rem, 65vh); overflow-y: auto; }
+.resident-contact-actions { border-top: 1px solid var(--line); padding-top: .5rem; }
+.resident-contact-actions h4 { margin: 0 0 .3rem; padding-inline: .6rem; }
+.resident-contact-actions .rsvp-phone { display: none; }
+.resident-contact-actions .rsvp-contact-group { border: 0; margin: 0; padding: 0; }
+.resident-contact-actions .rsvp-contact { display: grid; gap: .3rem; }
+.resident-contact-actions details { padding: .5rem; }
+.resident-contact-actions form { display: grid; gap: .65rem; margin-top: .65rem; }
+.resident-contact-actions input { min-width: 0; max-width: 100%; }
+.guest-pass-card:has(.resident-contact-actions):has(.guest-pass-menu[open]) { min-height: 38rem; }

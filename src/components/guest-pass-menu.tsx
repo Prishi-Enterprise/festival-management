@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { Ellipsis } from "lucide-react";
 import { PassShare } from "./pass-share";
 
@@ -11,6 +11,7 @@ export function GuestPassMenu({
   paymentUrl,
   onEdit,
   kind = "guest",
+  children,
 }: {
   url: string;
   festival: string;
@@ -19,6 +20,7 @@ export function GuestPassMenu({
   paymentUrl?: string;
   onEdit?: () => void;
   kind?: "guest" | "resident";
+  children?: ReactNode;
 }) {
   const root = useRef<HTMLDetailsElement>(null);
   useEffect(() => {
@@ -62,6 +64,7 @@ export function GuestPassMenu({
             Edit registration
           </button>
         )}
+        {children}
         <small className="guest-menu-code">Pass code: {code}</small>
       </div>
     </details>
