@@ -1875,3 +1875,7 @@ input::-webkit-datetime-edit { min-width: 0; padding: 0; }
 .rsvp-closed li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 16px; padding: 12px 0; border-bottom: 1px solid var(--line); }
 
 .brand-logo.platform-logo { padding: 0; border: 0; background: transparent; border-radius: 12px; aspect-ratio: 1; }
+
+.pass-qr { margin: 24px 0; }
+.pass-qr img { display:block; max-width:100%; height:auto; }
+.qr-camera { width:100%; max-width:480px; border-radius:12px; background:#11152c; }

@@ -4,6 +4,7 @@ export type Member = {
   display_name: string;
   role: "admin" | "committee";
   can_view_reports: boolean;
+  can_manage_finance?: boolean;
   active: boolean;
   version: number;
 };
@@ -12,6 +13,7 @@ export type Invitation = {
   email: string;
   role: "admin" | "committee";
   can_view_reports: boolean;
+  can_manage_finance?: boolean;
   status: string;
   expires_at: string;
   created_at: string;

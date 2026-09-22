@@ -41,6 +41,7 @@ export function FinanceDesk(p: Props) {
   const [resource, setResource] = useState<"account" | "vendor">("account");
   const [resourceId, setResourceId] = useState<string | null>(null);
   const [filter, setFilter] = useState("all");
+  const finance = p.member.role === "admin" || p.member.can_manage_finance;
   const admin = p.member.role === "admin";
   const flatName = (id: string | null) => {
     const f = p.flats.find((f) => f.id === id);
@@ -493,7 +494,7 @@ export function FinanceDesk(p: Props) {
       </div>
       <section className="panel finance-register">
         <div className="section-heading">
-          <h2>{admin ? "Entry review" : "My entries"}</h2>
+          <h2>{finance ? "Entry review" : "My entries"}</h2>
           <label>
             Status
             <select value={filter} onChange={(e) => setFilter(e.target.value)}>
@@ -594,23 +595,26 @@ export function FinanceDesk(p: Props) {
                               Edit
                             </button>
                           )}
-                        {admin && e.status !== "void" && (
-                          <button
-                            className="text-button"
-                            disabled={pending}
-                            onClick={() =>
-                              setReview({
-                                entry: e,
-                                action:
-                                  e.status === "pending" ? "confirm" : "unlock",
-                              })
-                            }
-                          >
-                            {e.status === "pending"
-                              ? "Confirm & lock"
-                              : "Unlock"}
-                          </button>
-                        )}
+                        {(admin || (finance && e.status === "pending")) &&
+                          e.status !== "void" && (
+                            <button
+                              className="text-button"
+                              disabled={pending}
+                              onClick={() =>
+                                setReview({
+                                  entry: e,
+                                  action:
+                                    e.status === "pending"
+                                      ? "confirm"
+                                      : "unlock",
+                                })
+                              }
+                            >
+                              {e.status === "pending"
+                                ? "Confirm & lock"
+                                : "Unlock"}
+                            </button>
+                          )}
                         {e.status === "pending" &&
                           (admin || e.created_by === p.member.user_id) && (
                             <button

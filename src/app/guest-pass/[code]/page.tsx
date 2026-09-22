@@ -1,3 +1,5 @@
+import { PassQr } from "@/components/pass-qr";
+import { appUrl } from "@/lib/config";
 import { Brand } from "@/components/brand";
 import { themeStyle } from "@/lib/societies";
 import { notFound } from "next/navigation";
@@ -54,6 +56,7 @@ export default async function Page({
               : "Show this pass to the committee at the meal entrance."}
           </strong>
         </p>
+        {!p.cancelled && <PassQr url={`${appUrl()}/guest-pass/${code}`} />}
         <p>Pass code: {p.code}</p>
         <p>
           This pass is valid only for the date and meals above. Each meal has

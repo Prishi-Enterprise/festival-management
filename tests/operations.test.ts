@@ -671,3 +671,35 @@ it("one-day guest packages retain meals and support independent meal admissions"
     asUser(db, ADMIN, "select manage_meal($1,'Community lunch',null)", [f]),
   ).rejects.toThrow("in use");
 });
+it("resident QR uses a separate code, exposes no contact or member names, and keeps payment eligibility", async () => {
+  const e = (
+    await db.query<{ attendance_code: string; rsvp_code: string }>(
+      "select attendance_code,rsvp_code from flat_enrollments where id=$1",
+      [enrollment],
+    )
+  ).rows[0];
+  expect(e.attendance_code).not.toBe(e.rsvp_code);
+  const p = (
+    await db.query<{ v: Record<string, unknown> }>(
+      "select resident_pass($1) v",
+      [e.attendance_code],
+    )
+  ).rows[0].v;
+  expect(p).not.toHaveProperty("contact_phone");
+  expect(p).not.toHaveProperty("members");
+  expect(JSON.stringify(p)).not.toContain("Resident adult");
+  expect(
+    (
+      await db.query<{ v: unknown }>("select resident_pass($1) v", [
+        e.rsvp_code,
+      ])
+    ).rows[0].v,
+  ).toBeNull();
+  expect(p.eligible).toBe(
+    (
+      await db.query<{ v: boolean }>("select private.fixed_paid($1) v", [
+        enrollment,
+      ])
+    ).rows[0].v,
+  );
+});

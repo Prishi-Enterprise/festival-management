@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { AttendanceScanner } from "./attendance-scanner";
 import { attendancePage, matchesAttendance } from "@/lib/attendance-list";
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
@@ -32,6 +33,10 @@ export function AttendanceDesk({
     window.history.replaceState(null, "", `?${query}`);
   };
   const service = services.find((s) => s.id === selected);
+  const [scanned, setScanned] = useState<{
+    kind: "resident" | "guest";
+    id: string;
+  } | null>(null);
   const [residentSearch, setResidentSearch] = useState("");
   const [guestSearch, setGuestSearch] = useState("");
   const [residentPage, setResidentPage] = useState(0);
@@ -64,13 +69,19 @@ export function AttendanceDesk({
     d.enrollments.some((e) => e.id === a.id),
   );
   const residentList = attendancePage(
-    residents.filter((a) => matchesAttendance(residentSearch, flat(a.flat_id))),
+    residents.filter(
+      (a) =>
+        (!scanned || (scanned.kind === "resident" && scanned.id === a.id)) &&
+        matchesAttendance(residentSearch, flat(a.flat_id)),
+    ),
     residentPage,
   );
   const guestList = attendancePage(
     guests
-      .filter((g) =>
-        matchesAttendance(guestSearch, flat(g.flat_id), g.pass_code),
+      .filter(
+        (g) =>
+          (!scanned || (scanned.kind === "guest" && scanned.id === g.id)) &&
+          matchesAttendance(guestSearch, flat(g.flat_id), g.pass_code),
       )
       .sort(
         (a, b) => Number(b.id === savedGuest) - Number(a.id === savedGuest),
@@ -138,6 +149,7 @@ export function AttendanceDesk({
                 value={selected}
                 onChange={(e) => {
                   setSelected(e.target.value);
+                  setScanned(null);
                   setEditing(null);
                   setResidentSearch("");
                   setGuestSearch("");
@@ -166,6 +178,52 @@ export function AttendanceDesk({
               admins can correct mistakes. Concurrent edits require a refresh.
             </p>
           </section>
+          <AttendanceScanner
+            key={selected}
+            onScan={(pass) => {
+              const found =
+                pass.kind === "resident"
+                  ? d.enrollments.find((e) => e.attendance_code === pass.code)
+                  : guests.find((g) => g.pass_code === pass.code);
+              if (
+                !found ||
+                (pass.kind === "resident" &&
+                  !residents.some((r) => r.id === found.id))
+              ) {
+                setScanned(null);
+                setNotice(
+                  "Pass is not available for this festival and selected meal.",
+                );
+                return;
+              }
+              setScanned({ kind: pass.kind, id: found.id });
+              setResidentSearch("");
+              setGuestSearch("");
+              setResidentPage(0);
+              setGuestPage(0);
+              setNotice(
+                "Pass found. Review the eligible count and save check-in below.",
+              );
+            }}
+          />
+          {notice && (
+            <p className="notice" role="status">
+              {notice}
+            </p>
+          )}
+          {scanned && (
+            <button
+              type="button"
+              className="button secondary"
+              onClick={() => {
+                setScanned(null);
+                setNotice("");
+              }}
+            >
+              Clear scanned pass · show all
+            </button>
+          )}
+
           <section className="panel finance-register">
             <h2>Residents</h2>
             <label>
@@ -267,11 +325,6 @@ export function AttendanceDesk({
                 }}
               />
             </label>
-            {notice && (
-              <p className="notice" role="status">
-                {notice}
-              </p>
-            )}
             <p>
               Every new guest pass is created with a guest entry. Guests can
               check in before admin confirmation.

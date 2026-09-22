@@ -23,6 +23,7 @@ function MemberEditor({
 }) {
   const [role, setRole] = useState(member.role);
   const [active, setActive] = useState(member.active);
+  const [finance, setFinance] = useState(member.can_manage_finance ?? false);
   const [reports, setReports] = useState(member.can_view_reports);
   const [ids, setIds] = useState(assigned);
   const [message, setMessage] = useState("");
@@ -61,11 +62,20 @@ function MemberEditor({
         <label className="checkbox-row">
           <input
             type="checkbox"
-            checked={role === "admin" || reports}
-            disabled={role === "admin"}
+            checked={role === "admin" || finance || reports}
+            disabled={role === "admin" || finance}
             onChange={(e) => setReports(e.target.checked)}
           />
           Can view reports (general overview)
+        </label>
+        <label className="checkbox-row">
+          <input
+            type="checkbox"
+            checked={role === "admin" || finance}
+            disabled={role === "admin"}
+            onChange={(e) => setFinance(e.target.checked)}
+          />
+          Finance &amp; accounts (includes reports and confirming entries)
         </label>
         <fieldset>
           <legend>Festival assignments</legend>
@@ -110,7 +120,8 @@ function MemberEditor({
                 user_id: member.user_id,
                 role,
                 active,
-                can_view_reports: role === "committee" && reports,
+                can_view_reports: role === "committee" && (reports || finance),
+                can_manage_finance: role === "committee" && finance,
                 version: member.version,
                 festival_ids: ids,
               });
@@ -168,7 +179,10 @@ export function UserManager({
                 const result = await inviteMember({
                   email: data.get("email"),
                   role: data.get("role"),
-                  can_view_reports: data.get("can_view_reports") === "on",
+                  can_view_reports:
+                    data.get("can_view_reports") === "on" ||
+                    data.get("can_manage_finance") === "on",
+                  can_manage_finance: data.get("can_manage_finance") === "on",
                   festival_ids: data.getAll("festivals"),
                 });
                 if (!result.ok) setError(result.error);
@@ -204,6 +218,10 @@ export function UserManager({
             <label className="checkbox-row">
               <input type="checkbox" name="can_view_reports" />
               Can view reports (general overview)
+            </label>
+            <label className="checkbox-row">
+              <input type="checkbox" name="can_manage_finance" />
+              Finance &amp; accounts (automatically includes reports)
             </label>
             <fieldset>
               <legend>Assign festivals</legend>

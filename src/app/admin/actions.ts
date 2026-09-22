@@ -50,6 +50,7 @@ export async function inviteMember(input: unknown): Promise<Result> {
     p_email: parsed.data.email,
     p_role: parsed.data.role,
     p_can_view_reports: parsed.data.can_view_reports,
+    p_can_manage_finance: parsed.data.can_manage_finance,
     p_festival_ids: parsed.data.festival_ids,
   });
 }
@@ -65,6 +66,7 @@ export async function updateMember(input: unknown): Promise<Result> {
       role: z.enum(["admin", "committee"]),
       active: z.boolean(),
       can_view_reports: z.boolean().default(false),
+      can_manage_finance: z.boolean().default(false),
       version: z.number().int().positive(),
       festival_ids: z.array(z.uuid()).max(100),
     })

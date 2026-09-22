@@ -56,6 +56,18 @@ export function RsvpContacts({
               {f?.block}–{f?.flat_number} · {e.members.length} registered
               members
             </h3>
+            {e.attendance_code && (
+              <p>
+                <a
+                  className="text-link"
+                  href={`${baseUrl}/resident-pass/${e.attendance_code}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Open resident QR pass
+                </a>
+              </p>
+            )}
             <div className="rsvp-contact">
               <span>{e.contact_phone ?? "Contact number needed"}</span>
               {e.contact_phone && (

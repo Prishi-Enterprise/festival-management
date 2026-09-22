@@ -236,6 +236,7 @@ export type Resident = {
   age_group: "adult" | "child" | "under_seven";
 };
 export type Enrollment = {
+  attendance_code?: string;
   contact_phone: string | null;
   rsvp_code: string;
   id: string;

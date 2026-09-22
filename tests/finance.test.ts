@@ -130,7 +130,7 @@ describe("Finance ownership, approval and custody", () => {
       "creator",
     );
     await expect(review(receipt.id, 1, "confirm", MEMBER)).rejects.toThrow(
-      "Admin access",
+      "Finance & accounts",
     );
     await expect(save(entry("donation"), OUTSIDER)).rejects.toThrow(
       "Festival access",
