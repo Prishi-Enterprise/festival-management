@@ -1902,7 +1902,7 @@ input::-webkit-datetime-edit { min-width: 0; padding: 0; }
 .guest-entry-actions .text-button { padding: .25rem 0; margin-right: .75rem; }
 .guest-checkin .operation-inline { min-width: 0; }
 .guest-checkin .operation-inline fieldset { display: flex; flex-wrap: wrap; gap: .6rem; align-items: end; }
-.guest-checkin .operation-inline .entry-actions { margin: 0; flex: 1 1 9rem; }
+.guest-checkin .operation-inline .entry-actions { margin: 0; flex: 0 1 12rem; }
 .guest-checkin .operation-inline label { margin: 0; }
 .guest-checkin .operation-inline input { width: 100%; }
 .guest-checkin .operation-inline button { margin: 0; min-height: 2.75rem; }
