@@ -25,7 +25,7 @@ export function RsvpContacts({
   });
   const current = Math.min(page, Math.max(0, Math.ceil(rows.length / 10) - 1));
   return (
-    <section className="panel">
+    <section className="panel rsvp-contacts">
       <h2>Flat contacts & daily RSVP</h2>
       <p>
         Share the private link with the registered contact. No sign-in is
@@ -51,60 +51,69 @@ export function RsvpContacts({
         const f = data.flats.find((f) => f.id === e.flat_id),
           url = `${baseUrl}/rsvp/${e.rsvp_code}`;
         return (
-          <div className="panel" key={e.id}>
+          <div className="panel rsvp-flat-card" key={e.id}>
             <h3>
               {f?.block}–{f?.flat_number} · {e.members.length} registered
               members
             </h3>
             {e.attendance_code && (
-              <p>
+              <div className="resident-pass-actions">
+                <h4>Resident attendance QR</h4>
                 <a
-                  className="text-link"
+                  className="button secondary"
                   href={`${baseUrl}/resident-pass/${e.attendance_code}`}
                   target="_blank"
                   rel="noreferrer"
                 >
                   Open resident QR pass
                 </a>
-              </p>
+                <p className="tiny">
+                  One pass for all registered members of this flat.
+                </p>
+              </div>
             )}
-            <div className="rsvp-contact">
-              <span>{e.contact_phone ?? "Contact number needed"}</span>
-              {e.contact_phone && (
-                <>
-                  <a
-                    className="text-link"
-                    href={url}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Open RSVP
-                  </a>
-                  <button
-                    className="text-button"
-                    onClick={async () => {
-                      try {
-                        await navigator.clipboard.writeText(url);
-                        setMessage(
-                          "Private RSVP link copied. Share it only with this flat’s contact.",
-                        );
-                      } catch {
-                        setMessage(`Copy this link: ${url}`);
-                      }
-                    }}
-                  >
-                    Copy private link
-                  </button>
-                  <a
-                    className="text-link"
-                    href={`https://wa.me/${e.contact_phone.replace("+", "")}?text=${encodeURIComponent(`Your daily RSVP for ${data.festival.name}: ${url}`)}`}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Share on WhatsApp
-                  </a>
-                </>
-              )}
+            <div className="rsvp-contact-group">
+              <h4>Daily RSVP</h4>
+              <p className="rsvp-phone">
+                {e.contact_phone ?? "Contact number needed"}
+              </p>
+              <div className="rsvp-contact">
+                {e.contact_phone && (
+                  <>
+                    <a
+                      className="button secondary"
+                      href={url}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Open RSVP
+                    </a>
+                    <button
+                      className="button secondary"
+                      onClick={async () => {
+                        try {
+                          await navigator.clipboard.writeText(url);
+                          setMessage(
+                            "Private RSVP link copied. Share it only with this flat’s contact.",
+                          );
+                        } catch {
+                          setMessage(`Copy this link: ${url}`);
+                        }
+                      }}
+                    >
+                      Copy private link
+                    </button>
+                    <a
+                      className="button secondary"
+                      href={`https://wa.me/${e.contact_phone.replace("+", "")}?text=${encodeURIComponent(`Your daily RSVP for ${data.festival.name}: ${url}`)}`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Share on WhatsApp
+                    </a>
+                  </>
+                )}
+              </div>
             </div>
             {admin && (
               <details>

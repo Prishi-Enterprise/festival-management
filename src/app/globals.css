@@ -1922,3 +1922,15 @@ input::-webkit-datetime-edit { min-width: 0; padding: 0; }
 .qr-camera { width: 100%; max-width: 32rem; max-height: 22rem; object-fit: contain; border-radius: .75rem; background: #111; }
 .scanned-attendance { background: #fff7df; outline: 2px solid #bd902d; outline-offset: -2px; scroll-margin-block: 9rem; }
 .scanned-attendance td { padding: .75rem; }
+
+.rsvp-contacts > label { display: grid; gap: .5rem; margin-bottom: 1rem; }
+.rsvp-flat-card { margin-block: 1rem; }
+.rsvp-flat-card h3 { margin-bottom: 1rem; }
+.rsvp-flat-card h4 { margin: 0 0 .6rem; }
+.resident-pass-actions, .rsvp-contact-group { margin-block: 1rem; }
+.rsvp-contact-group { border-top: 1px solid var(--border); padding-top: 1rem; }
+.rsvp-phone { margin: 0 0 .75rem; overflow-wrap: anywhere; }
+.rsvp-flat-card .rsvp-contact { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; }
+.rsvp-flat-card .rsvp-contact .button, .resident-pass-actions .button { margin: 0; padding: .6rem .85rem; }
+.rsvp-flat-card details { margin-top: 1rem; }
+.rsvp-flat-card details form { display: grid; gap: .75rem; margin-top: .75rem; }
