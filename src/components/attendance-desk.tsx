@@ -1,5 +1,5 @@
 "use client";
-import { PassShare } from "./pass-share";
+import { GuestPassMenu } from "./guest-pass-menu";
 import Link from "next/link";
 import { AttendanceScanner } from "./attendance-scanner";
 import { attendancePage, matchesAttendance } from "@/lib/attendance-list";
@@ -392,19 +392,26 @@ export function AttendanceDesk({
                   className={`guest-pass-card ${scanned?.id === g.id ? "scanned-attendance" : ""}`}
                 >
                   <div className="guest-pass-heading">
-                    <h3>{flat(g.flat_id)}</h3>
-                    <p className="tiny">{service && serviceLabel(service)}</p>
-                    {!g.cancelled && (
-                      <PassShare
-                        showOpen
+                    <div className="guest-card-title">
+                      <h3>{flat(g.flat_id)}</h3>
+                      <GuestPassMenu
                         url={`${baseUrl}/guest-pass/${g.pass_code}`}
                         festival={d.festival.name}
+                        flat={flat(g.flat_id)}
+                        code={g.pass_code}
+                        paymentUrl={
+                          !g.cancelled
+                            ? `/desk/${d.festival.id}/guest-payments?guest=${g.id}`
+                            : undefined
+                        }
+                        onEdit={
+                          g.created_by === member.user_id
+                            ? () => setEditing(g)
+                            : undefined
+                        }
                       />
-                    )}
-                    <details className="guest-pass-code">
-                      <summary>Pass code</summary>
-                      <small>{g.pass_code}</small>
-                    </details>
+                    </div>
+                    <p className="tiny">{service && serviceLabel(service)}</p>
                     <small>
                       {g.payment_status === "confirmed"
                         ? "Receipt confirmed"
@@ -428,24 +435,6 @@ export function AttendanceDesk({
                       : g.adults + g.children + g.under_seven - g.attended}
                   </div>
                   <div className="guest-checkin">
-                    <div className="guest-entry-actions">
-                      {!g.cancelled && (
-                        <Link
-                          className="text-button"
-                          href={`/desk/${d.festival.id}/guest-payments?guest=${g.id}`}
-                        >
-                          Record linked payment
-                        </Link>
-                      )}
-                      {g.created_by === member.user_id && (
-                        <button
-                          className="text-button"
-                          onClick={() => setEditing(g)}
-                        >
-                          Edit registration
-                        </button>
-                      )}
-                    </div>
                     {!g.cancelled && (
                       <OperationForm
                         compact

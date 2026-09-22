@@ -1967,3 +1967,20 @@ input::-webkit-datetime-edit { min-width: 0; padding: 0; }
   .resident-checkin .operation-inline input { width: 100%; max-width: none; }
   .resident-checkin .operation-inline button { margin: 0; min-height: 2.75rem; }
 }
+
+.guest-pass-carousel { gap: 1rem; padding: .5rem .25rem 1rem; }
+.guest-pass-card { flex-basis: min(24rem, 92%); border: 1px solid #d7cbb6; background: #fffdf8; box-shadow: 0 2px 7px rgb(25 22 12 / 7%); }
+.guest-pass-card .guest-checkin { border-top: 1px solid #e7dece; }
+.guest-card-title { display: flex; align-items: start; justify-content: space-between; gap: .75rem; position: relative; }
+.guest-card-title h3 { margin: .5rem 0 0; }
+.guest-pass-menu { border: 0; padding: 0; margin: 0; background: transparent; }
+.guest-pass-menu > summary { display: flex; justify-content: center; align-items: center; list-style: none; width: 2.75rem; height: 2.75rem; border: 1px solid #ded5c5; border-radius: .6rem; cursor: pointer; background: #fff; }
+.guest-pass-menu > summary::-webkit-details-marker { display: none; }
+.guest-pass-menu-content { position: absolute; z-index: 5; top: 3rem; right: 0; width: min(18rem, 100%); padding: .65rem; border: 1px solid #d7cbb6; border-radius: .75rem; background: #fff; box-shadow: 0 5px 18px rgb(0 0 0 / 15%); display: grid; gap: .3rem; }
+.guest-pass-menu-content .pass-share { margin: 0; }
+.guest-pass-menu-content .pass-share-actions { display: grid; gap: .3rem; }
+.guest-pass-menu-content .button { display: block; width: 100%; text-align: left; padding: .65rem; margin: 0; border: 0; border-radius: .35rem; font-size: .85rem; }
+.guest-pass-menu-content .button:hover { background: #f7f2e8; }
+.guest-menu-code { overflow-wrap: anywhere; padding: .6rem; border-top: 1px solid #eee5d5; color: #73717a; font-size: .7rem; }
+@media print { .guest-pass-menu { display: none; } }
+.guest-pass-card:has(.guest-pass-menu[open]) { min-height: 27rem; }
