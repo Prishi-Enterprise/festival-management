@@ -5,10 +5,12 @@ export function PassShare({
   url,
   festival,
   showOpen = false,
+  kind = "guest",
 }: {
   url: string;
   festival: string;
   showOpen?: boolean;
+  kind?: "guest" | "resident";
 }) {
   const [message, setMessage] = useState("");
   return (
@@ -30,7 +32,7 @@ export function PassShare({
           onClick={async () => {
             try {
               await navigator.clipboard.writeText(url);
-              setMessage("Guest pass link copied.");
+              setMessage("Attendance pass link copied.");
             } catch {
               setMessage(`Copy this link: ${url}`);
             }
@@ -42,7 +44,7 @@ export function PassShare({
           className="button secondary"
           target="_blank"
           rel="noreferrer"
-          href={`https://wa.me/?text=${encodeURIComponent(`Your guest pass for ${festival}: ${url}`)}`}
+          href={`https://wa.me/?text=${encodeURIComponent(`Your ${kind} pass for ${festival}: ${url}`)}`}
         >
           Share on WhatsApp
         </a>

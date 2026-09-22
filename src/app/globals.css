@@ -1987,3 +1987,7 @@ input::-webkit-datetime-edit { min-width: 0; padding: 0; }
 
 .guest-save-actions .button { margin: 0; text-align: center; white-space: normal; }
 @media (max-width: 540px) { .guest-save-actions { flex-direction: column; align-items: stretch; } }
+
+.guest-pass-card .guest-pass-menu-content .pass-share-actions .button { text-align: left; justify-content: flex-start; }
+.resident-pass-card { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.resident-pass-card .guest-pass-heading, .resident-pass-card .guest-checkin { grid-column: 1 / -1; }

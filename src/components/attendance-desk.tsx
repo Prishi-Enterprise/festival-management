@@ -267,74 +267,91 @@ export function AttendanceDesk({
                 }}
               />
             </label>
-            <div className="table-scroll resident-attendance-scroll">
-              <table className="resident-attendance-table">
-                <thead>
-                  <tr>
-                    <th>Flat</th>
-                    <th>Eligible</th>
-                    <th>Admitted</th>
-                    <th>Remaining</th>
-                    <th>Check-in</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {residentList.items.map((a) => (
-                    <tr
-                      key={a.id}
-                      id={`attendance-resident-${a.id}`}
-                      tabIndex={-1}
-                      className={
-                        scanned?.id === a.id ? "scanned-attendance" : undefined
-                      }
-                    >
-                      <td className="resident-flat">
-                        <strong>{flat(a.flat_id)}</strong>
-                        <small>
-                          {a.confirmed
-                            ? "Fixed fee confirmed"
-                            : "Awaiting confirmed fixed payment"}
-                        </small>
-                      </td>
-                      <td data-label="Eligible">{mealTotal(a)}</td>
-                      <td data-label="Admitted">{a.attended}</td>
-                      <td data-label="Remaining">
-                        {Math.max(0, mealTotal(a) - a.attended)}
-                      </td>
-                      <td className="resident-checkin">
-                        {(a.confirmed ||
-                          (member.role === "admin" && a.attended > 0)) && (
-                          <OperationForm
-                            compact
-                            key={`${a.id}-${a.service_id}-${a.version}`}
-                            operation="resident_checkin"
-                            base={{
-                              id: a.id,
-                              service_id: selected,
-                              version: a.version,
-                              attended: a.attended,
-                            }}
-                            fields={[
-                              {
-                                name: "attended",
-                                label: `Total admitted ${flat(a.flat_id)}`,
-                                type: "number",
-                                max:
-                                  member.role === "admin"
-                                    ? Math.max(mealTotal(a), a.attended)
-                                    : mealTotal(a),
-                                min: member.role === "admin" ? 0 : a.attended,
-                                required: true,
-                              },
-                            ]}
-                            button="Save check-in"
+            <p className="tiny">
+              Swipe or scroll sideways to browse flats. Each page shows up to
+              10.
+            </p>
+            <div
+              className="guest-pass-carousel"
+              key={`${residentList.page}-${selected}`}
+              role="region"
+              aria-label="Resident attendance cards"
+              tabIndex={0}
+            >
+              {residentList.items.map((a) => {
+                const pass = d.enrollments.find((e) => e.id === a.id);
+                return (
+                  <article
+                    key={a.id}
+                    id={`attendance-resident-${a.id}`}
+                    tabIndex={-1}
+                    className={`guest-pass-card resident-pass-card ${scanned?.id === a.id ? "scanned-attendance" : ""}`}
+                  >
+                    <div className="guest-pass-heading">
+                      <div className="guest-card-title">
+                        <h3>{flat(a.flat_id)}</h3>
+                        {pass?.attendance_code && (
+                          <GuestPassMenu
+                            kind="resident"
+                            url={`${baseUrl}/resident-pass/${pass.attendance_code}`}
+                            festival={d.festival.name}
+                            flat={flat(a.flat_id)}
+                            code={pass.attendance_code}
                           />
                         )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      </div>
+                      <p className="tiny">{service && serviceLabel(service)}</p>
+                      <small>
+                        {a.confirmed
+                          ? "Fixed fee confirmed"
+                          : "Awaiting confirmed fixed payment"}
+                      </small>
+                    </div>
+                    <div className="guest-pass-stat">
+                      <span>Eligible</span>
+                      {mealTotal(a)}
+                    </div>
+                    <div className="guest-pass-stat">
+                      <span>Admitted</span>
+                      {a.attended}
+                    </div>
+                    <div className="guest-pass-stat">
+                      <span>Remaining</span>
+                      {Math.max(0, mealTotal(a) - a.attended)}
+                    </div>
+                    <div className="guest-checkin">
+                      {(a.confirmed ||
+                        (member.role === "admin" && a.attended > 0)) && (
+                        <OperationForm
+                          compact
+                          key={`${a.id}-${a.service_id}-${a.version}`}
+                          operation="resident_checkin"
+                          base={{
+                            id: a.id,
+                            service_id: selected,
+                            version: a.version,
+                            attended: a.attended,
+                          }}
+                          fields={[
+                            {
+                              name: "attended",
+                              label: `Total admitted ${flat(a.flat_id)}`,
+                              type: "number",
+                              max:
+                                member.role === "admin"
+                                  ? Math.max(mealTotal(a), a.attended)
+                                  : mealTotal(a),
+                              min: member.role === "admin" ? 0 : a.attended,
+                              required: true,
+                            },
+                          ]}
+                          button="Save check-in"
+                        />
+                      )}
+                    </div>
+                  </article>
+                );
+              })}
             </div>
             {!residentList.total && (
               <p>

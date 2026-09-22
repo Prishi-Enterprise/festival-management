@@ -10,6 +10,7 @@ export function GuestPassMenu({
   code,
   paymentUrl,
   onEdit,
+  kind = "guest",
 }: {
   url: string;
   festival: string;
@@ -17,6 +18,7 @@ export function GuestPassMenu({
   code: string;
   paymentUrl?: string;
   onEdit?: () => void;
+  kind?: "guest" | "resident";
 }) {
   const root = useRef<HTMLDetailsElement>(null);
   useEffect(() => {
@@ -42,7 +44,7 @@ export function GuestPassMenu({
         <Ellipsis size={22} aria-hidden="true" />
       </summary>
       <div className="guest-pass-menu-content">
-        <PassShare showOpen url={url} festival={festival} />
+        <PassShare showOpen url={url} festival={festival} kind={kind} />
         {paymentUrl && (
           <a className="button secondary" href={paymentUrl}>
             Record linked payment
