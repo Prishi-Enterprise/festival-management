@@ -206,10 +206,16 @@
   font-size: 10px;
   color: var(--muted);
 }
-.landing footer span:first-child {
+.landing footer .prishi-home-link {
   letter-spacing: 0.16em;
   font-weight: 700;
   color: var(--navy);
+  font-size: 12px;
+  padding: 8px 0;
+}
+.landing footer .prishi-home-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
 }
 .landing footer span[lang] {
   font-size: 13px;
