@@ -1,4 +1,5 @@
 "use client";
+import { PassShare } from "./pass-share";
 import Link from "next/link";
 import { AttendanceScanner } from "./attendance-scanner";
 import { attendancePage, matchesAttendance } from "@/lib/attendance-list";
@@ -16,9 +17,11 @@ import type { Member } from "@/lib/types";
 export function AttendanceDesk({
   data: d,
   member,
+  baseUrl,
 }: {
   data: OperationsData;
   member: Member;
+  baseUrl: string;
 }) {
   const services = d.services.filter(
     (s) => s.coverage !== "not_served" || s.guest_available,
@@ -358,6 +361,12 @@ export function AttendanceDesk({
                             Open guest pass
                           </Link>
                         </small>
+                        {!g.cancelled && (
+                          <PassShare
+                            url={`${baseUrl}/guest-pass/${g.pass_code}`}
+                            festival={d.festival.name}
+                          />
+                        )}
                         <small>{g.pass_code}</small>
                         <small>
                           {g.payment_status === "confirmed"

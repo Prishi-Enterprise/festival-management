@@ -1883,3 +1883,6 @@ input::-webkit-datetime-edit { min-width: 0; padding: 0; }
 .flat-selector { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; min-width: 0; }
 .flat-selector > label { min-width: 0; }
 @media (max-width: 420px) { .flat-selector { grid-template-columns: minmax(0, 1fr); } }
+
+.pass-share { margin-block: 0.5rem; overflow-wrap: anywhere; }
+@media print { .pass-share { display: none; } }

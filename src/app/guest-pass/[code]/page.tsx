@@ -1,3 +1,4 @@
+import { PassShare } from "@/components/pass-share";
 import { PassQr } from "@/components/pass-qr";
 import { appUrl } from "@/lib/config";
 import { Brand } from "@/components/brand";
@@ -63,6 +64,12 @@ export default async function Page({
           its own guest allowance. Admission is recorded by the committee;
           sharing it does not increase its guest allowance.
         </p>
+        {!p.cancelled && (
+          <PassShare
+            url={`${appUrl()}/guest-pass/${code}`}
+            festival={p.festival}
+          />
+        )}
         <PrintButton />
       </section>
     </main>

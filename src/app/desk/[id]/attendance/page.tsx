@@ -19,7 +19,11 @@ export default async function Page({
   if (error) throw new Error("Could not load attendance.");
   return (
     <>
-      <AttendanceDesk data={data as OperationsData} member={member} />
+      <AttendanceDesk
+        data={data as OperationsData}
+        member={member}
+        baseUrl={appUrl()}
+      />
       <RsvpContacts
         data={data as OperationsData}
         admin={member.role === "admin"}
