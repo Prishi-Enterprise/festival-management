@@ -37,6 +37,11 @@ export default function Login() {
         <p className="tiny muted">
           Need access? Ask your society admin to invite your email address.
         </p>
+        <footer className="login-prishi-footer">
+          <a href="https://prishi.in">
+            A product by Prishi <span aria-hidden="true">↗</span>
+          </a>
+        </footer>
       </div>
     </AuthFrame>
   );
