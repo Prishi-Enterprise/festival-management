@@ -371,105 +371,106 @@ export function AttendanceDesk({
             >
               Record guest entry & create pass
             </Link>
-            <div className="table-scroll">
-              <table className="guest-pass-table">
-                <thead>
-                  <tr>
-                    <th>Host flat / pass</th>
-                    <th>Registered</th>
-                    <th>Admitted / remaining</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {guestList.items.map((g) => (
-                    <tr
-                      key={g.id}
-                      id={`attendance-guest-${g.id}`}
-                      tabIndex={-1}
-                      className={`guest-pass-row ${scanned?.id === g.id ? "scanned-attendance" : ""}`}
-                    >
-                      <td>
-                        {flat(g.flat_id)}
-                        {!g.cancelled && (
-                          <PassShare
-                            showOpen
-                            url={`${baseUrl}/guest-pass/${g.pass_code}`}
-                            festival={d.festival.name}
-                          />
-                        )}
-                        <details className="guest-pass-code">
-                          <summary>Pass code</summary>
-                          <small>{g.pass_code}</small>
-                        </details>
-                        <small>
-                          {g.payment_status === "confirmed"
-                            ? "Receipt confirmed"
-                            : g.payment_status === "pending"
-                              ? "Receipt awaiting confirmation"
-                              : g.payment_status === "payee_due"
-                                ? "Payee owes guest fee"
-                                : "No active linked receipt"}
-                        </small>
-                      </td>
-                      <td data-label="Registered">
-                        {g.adults + g.children + g.under_seven}
-                        {g.cancelled ? " · Cancelled" : ""}
-                      </td>
-                      <td data-label="Admitted / remaining">
-                        {g.attended} /{" "}
-                        {g.cancelled
-                          ? 0
-                          : g.adults + g.children + g.under_seven - g.attended}
-                      </td>
-                      <td className="guest-checkin">
-                        <div className="guest-entry-actions">
-                          {!g.cancelled && (
-                            <Link
-                              className="text-button"
-                              href={`/desk/${d.festival.id}/guest-payments?guest=${g.id}`}
-                            >
-                              Record linked payment
-                            </Link>
-                          )}
-                          {g.created_by === member.user_id && (
-                            <button
-                              className="text-button"
-                              onClick={() => setEditing(g)}
-                            >
-                              Edit registration
-                            </button>
-                          )}
-                        </div>
-                        {!g.cancelled && (
-                          <OperationForm
-                            compact
-                            key={`${g.id}-${g.version}`}
-                            operation="guest_checkin"
-                            base={{
-                              id: g.id,
-                              service_id: selected,
-                              version: g.version,
-                              attended: g.attended,
-                            }}
-                            fields={[
-                              {
-                                name: "attended",
-                                label: "Total guests admitted",
-                                type: "number",
-                                max: g.adults + g.children + g.under_seven,
-                                min: member.role === "admin" ? 0 : g.attended,
-                                required: true,
-                              },
-                            ]}
-                            button="Save check-in"
-                          />
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <p className="tiny">
+              Swipe or scroll sideways to browse passes. Each page shows up to
+              10.
+            </p>
+            <div
+              className="guest-pass-carousel"
+              key={`${guestList.page}-${selected}`}
+              role="region"
+              aria-label="Guest pass cards"
+              tabIndex={0}
+            >
+              {guestList.items.map((g) => (
+                <article
+                  key={g.id}
+                  id={`attendance-guest-${g.id}`}
+                  tabIndex={-1}
+                  className={`guest-pass-card ${scanned?.id === g.id ? "scanned-attendance" : ""}`}
+                >
+                  <div className="guest-pass-heading">
+                    <h3>{flat(g.flat_id)}</h3>
+                    <p className="tiny">{service && serviceLabel(service)}</p>
+                    {!g.cancelled && (
+                      <PassShare
+                        showOpen
+                        url={`${baseUrl}/guest-pass/${g.pass_code}`}
+                        festival={d.festival.name}
+                      />
+                    )}
+                    <details className="guest-pass-code">
+                      <summary>Pass code</summary>
+                      <small>{g.pass_code}</small>
+                    </details>
+                    <small>
+                      {g.payment_status === "confirmed"
+                        ? "Receipt confirmed"
+                        : g.payment_status === "pending"
+                          ? "Receipt awaiting confirmation"
+                          : g.payment_status === "payee_due"
+                            ? "Payee owes guest fee"
+                            : "No active linked receipt"}
+                    </small>
+                  </div>
+                  <div className="guest-pass-stat">
+                    <span>Registered</span>
+                    {g.adults + g.children + g.under_seven}
+                    {g.cancelled ? " · Cancelled" : ""}
+                  </div>
+                  <div className="guest-pass-stat">
+                    <span>Admitted / remaining</span>
+                    {g.attended} /{" "}
+                    {g.cancelled
+                      ? 0
+                      : g.adults + g.children + g.under_seven - g.attended}
+                  </div>
+                  <div className="guest-checkin">
+                    <div className="guest-entry-actions">
+                      {!g.cancelled && (
+                        <Link
+                          className="text-button"
+                          href={`/desk/${d.festival.id}/guest-payments?guest=${g.id}`}
+                        >
+                          Record linked payment
+                        </Link>
+                      )}
+                      {g.created_by === member.user_id && (
+                        <button
+                          className="text-button"
+                          onClick={() => setEditing(g)}
+                        >
+                          Edit registration
+                        </button>
+                      )}
+                    </div>
+                    {!g.cancelled && (
+                      <OperationForm
+                        compact
+                        key={`${g.id}-${g.version}`}
+                        operation="guest_checkin"
+                        base={{
+                          id: g.id,
+                          service_id: selected,
+                          version: g.version,
+                          attended: g.attended,
+                        }}
+                        fields={[
+                          {
+                            name: "attended",
+                            label: "Total guests admitted",
+                            type: "number",
+                            max: g.adults + g.children + g.under_seven,
+                            min: member.role === "admin" ? 0 : g.attended,
+                            required: true,
+                          },
+                        ]}
+                        button="Save check-in"
+                      />
+                    )}
+                  </div>
+                </article>
+              ))}
             </div>
             {!guestList.total && (
               <p>

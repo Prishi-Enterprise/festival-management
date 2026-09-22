@@ -1934,3 +1934,16 @@ input::-webkit-datetime-edit { min-width: 0; padding: 0; }
 .rsvp-flat-card .rsvp-contact .button, .resident-pass-actions .button { margin: 0; padding: .6rem .85rem; }
 .rsvp-flat-card details { margin-top: 1rem; }
 .rsvp-flat-card details form { display: grid; gap: .75rem; margin-top: .75rem; }
+
+.guest-pass-carousel { display: flex; gap: 1rem; overflow-x: auto; scroll-snap-type: x mandatory; padding: .25rem .25rem 1rem; margin-block: .75rem; align-items: stretch; }
+.guest-pass-card { flex: 0 0 min(28rem, 92%); min-width: 0; border: 1px solid var(--border); border-radius: 1rem; padding: 1rem; background: var(--panel, #fff); scroll-snap-align: start; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; align-content: start; }
+.guest-pass-heading, .guest-pass-card .guest-checkin { grid-column: 1 / -1; min-width: 0; }
+.guest-pass-heading h3 { margin: 0 0 .35rem; }
+.guest-pass-heading > small { display: block; margin-top: .5rem; }
+.guest-pass-card .guest-pass-code { border: 0; padding: 0; background: transparent; }
+.guest-pass-card .guest-pass-code small { overflow-wrap: anywhere; }
+.guest-pass-stat > span { display: block; font-size: .8rem; color: var(--muted); margin-bottom: .3rem; }
+.guest-pass-card .guest-checkin { border-top: 1px solid var(--border); padding-top: 1rem; }
+.guest-pass-card.scanned-attendance { background: #fff7df; }
+.guest-pass-card .pass-share-actions .button { flex: 1 1 auto; text-align: center; }
+@media print { .guest-pass-carousel { display: block; overflow: visible; } .guest-pass-card { break-inside: avoid; margin-bottom: 1rem; } }
