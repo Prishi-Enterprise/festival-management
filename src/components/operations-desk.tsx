@@ -62,10 +62,6 @@ export function OperationsDesk({
     const f = d.flats.find((f) => f.id === id);
     return f ? `${f.block}–${f.flat_number}` : "Unknown flat";
   };
-  const flatOptions = d.flats.map((f) => ({
-    value: f.id,
-    label: `${f.block}–${f.flat_number}`,
-  }));
   const attendance = d.attendance
     .filter((a) => a.service_id === service?.id)
     .sort((a, b) =>
@@ -519,8 +515,8 @@ export function OperationsDesk({
                   {
                     name: "flat_id",
                     label: "Flat",
-                    type: "select",
-                    options: flatOptions,
+                    type: "flat",
+                    flats: d.flats,
                   },
                   ...categoryFields(participantCategories),
                   {

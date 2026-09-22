@@ -1,4 +1,5 @@
 "use client";
+import { FlatSelector } from "./flat-selector";
 import Link from "next/link";
 import { FlatContactEditor } from "@/components/flat-contact-editor";
 import { useRef, useState, useTransition } from "react";
@@ -156,31 +157,16 @@ export function FlatPaymentForm({
                   <option>Meal package</option>
                 </select>
               </label>
-              <label>
-                Flat
-                <select
-                  required
-                  value={flat}
-                  disabled={!!entry}
-                  onChange={(e) => {
-                    setFlat(e.target.value);
-                    setMembers([]);
-                    setSelected([]);
-                  }}
-                >
-                  <option value="">Choose flat</option>
-                  {d.flats
-                    .filter(
-                      (f) => f.active !== false || f.id === entry?.flat_id,
-                    )
-                    .map((f) => (
-                      <option key={f.id} value={f.id}>
-                        {f.block}–{f.flat_number}
-                        {f.active === false ? " · Inactive" : ""}
-                      </option>
-                    ))}
-                </select>
-              </label>
+              <FlatSelector
+                flats={d.flats}
+                value={flat}
+                disabled={!!entry}
+                onChange={(id) => {
+                  setFlat(id);
+                  setMembers([]);
+                  setSelected([]);
+                }}
+              />
               <label>
                 Receipt date
                 <input

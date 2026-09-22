@@ -95,8 +95,8 @@ export function AttendanceDesk({
     {
       name: "flat_id",
       label: "Host flat",
-      type: "select",
-      options: d.flats.map((f) => ({ value: f.id, label: flat(f.id) })),
+      type: "flat",
+      flats: d.flats,
     },
     {
       name: "adults",

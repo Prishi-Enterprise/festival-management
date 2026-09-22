@@ -1879,3 +1879,7 @@ input::-webkit-datetime-edit { min-width: 0; padding: 0; }
 .pass-qr { margin: 24px 0; }
 .pass-qr img { display:block; max-width:100%; height:auto; }
 .qr-camera { width:100%; max-width:480px; border-radius:12px; background:#11152c; }
+
+.flat-selector { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; min-width: 0; }
+.flat-selector > label { min-width: 0; }
+@media (max-width: 420px) { .flat-selector { grid-template-columns: minmax(0, 1fr); } }

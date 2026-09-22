@@ -1,4 +1,5 @@
 "use client";
+import { FlatSelector, type FlatOption } from "./flat-selector";
 import { useRef, useState, useTransition } from "react";
 import { saveOperation } from "@/app/desk/operations-actions";
 import type { Operation } from "@/lib/operations";
@@ -7,7 +8,15 @@ export type Field = {
   name: string;
   label: string;
   type?:
-    "text" | "date" | "number" | "money" | "checkbox" | "select" | "cutoff";
+    | "text"
+    | "date"
+    | "number"
+    | "money"
+    | "checkbox"
+    | "select"
+    | "cutoff"
+    | "flat";
+  flats?: FlatOption[];
   options?: { value: string; label: string }[];
   required?: boolean;
   max?: number;
@@ -93,6 +102,17 @@ export function OperationForm({
             if (f.name === "category_other" && category !== "Other")
               return null;
             const value = base[f.name];
+            if (f.type === "flat")
+              return (
+                <FlatSelector
+                  key={f.name}
+                  flats={f.flats ?? []}
+                  name={f.name}
+                  label={f.label}
+                  defaultValue={String(value ?? "")}
+                  required={f.required !== false}
+                />
+              );
             return (
               <label
                 key={f.name}

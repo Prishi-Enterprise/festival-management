@@ -54,14 +54,12 @@ export function GuestPaymentForm({
           {
             name: "flat_id",
             label: "Host flat",
-            type: "select" as const,
-            options: d.flats
-              .filter(
-                (f) =>
-                  (f.active !== false || f.id === entry?.flat_id) &&
-                  (!entry || f.id === entry.flat_id),
-              )
-              .map((f) => ({ value: f.id, label: label(f.id) })),
+            type: "flat" as const,
+            flats: d.flats.filter(
+              (f) =>
+                (f.active !== false || f.id === entry?.flat_id) &&
+                (!entry || f.id === entry.flat_id),
+            ),
           },
           {
             name: "adults",
