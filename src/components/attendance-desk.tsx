@@ -3,7 +3,7 @@ import { PassShare } from "./pass-share";
 import Link from "next/link";
 import { AttendanceScanner } from "./attendance-scanner";
 import { attendancePage, matchesAttendance } from "@/lib/attendance-list";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { OperationForm, type Field } from "./operation-form";
 import {
@@ -40,6 +40,14 @@ export function AttendanceDesk({
     kind: "resident" | "guest";
     id: string;
   } | null>(null);
+  useEffect(() => {
+    if (!scanned) return;
+    const row = document.getElementById(
+      `attendance-${scanned.kind}-${scanned.id}`,
+    );
+    row?.scrollIntoView({ behavior: "smooth", block: "center" });
+    row?.focus({ preventScroll: true });
+  }, [scanned]);
   const [residentSearch, setResidentSearch] = useState("");
   const [guestSearch, setGuestSearch] = useState("");
   const [residentPage, setResidentPage] = useState(0);
@@ -197,16 +205,34 @@ export function AttendanceDesk({
                 setNotice(
                   "Pass is not available for this festival and selected meal.",
                 );
-                return;
+                return {
+                  message:
+                    "QR read, but this pass is not available for the selected festival, day and meal. Check the day and meal above, then scan again.",
+                };
               }
               setScanned({ kind: pass.kind, id: found.id });
               setResidentSearch("");
               setGuestSearch("");
               setResidentPage(0);
               setGuestPage(0);
-              setNotice(
-                "Pass found. Review the eligible count and save check-in below.",
-              );
+              const resident =
+                pass.kind === "resident"
+                  ? residents.find((r) => r.id === found.id)
+                  : undefined;
+              const guest =
+                pass.kind === "guest"
+                  ? guests.find((g) => g.id === found.id)
+                  : undefined;
+              const message = guest?.cancelled
+                ? `Guest pass for ${flat(found.flat_id)} is cancelled. Check-in is unavailable.`
+                : resident && !resident.confirmed
+                  ? `Resident pass for ${flat(found.flat_id)} found. Fixed payment is not confirmed; admission is unavailable.`
+                  : `${pass.kind === "guest" ? "Guest" : "Resident"} pass for ${flat(found.flat_id)} found. Review the count and press Save check-in. Scanning alone does not record attendance.`;
+              setNotice(message);
+              return {
+                message,
+                targetId: `attendance-${pass.kind}-${found.id}`,
+              };
             }}
           />
           {notice && (
@@ -254,7 +280,14 @@ export function AttendanceDesk({
                 </thead>
                 <tbody>
                   {residentList.items.map((a) => (
-                    <tr key={a.id}>
+                    <tr
+                      key={a.id}
+                      id={`attendance-resident-${a.id}`}
+                      tabIndex={-1}
+                      className={
+                        scanned?.id === a.id ? "scanned-attendance" : undefined
+                      }
+                    >
                       <td>
                         {flat(a.flat_id)}
                         <small>
@@ -350,7 +383,12 @@ export function AttendanceDesk({
                 </thead>
                 <tbody>
                   {guestList.items.map((g) => (
-                    <tr key={g.id} className="guest-pass-row">
+                    <tr
+                      key={g.id}
+                      id={`attendance-guest-${g.id}`}
+                      tabIndex={-1}
+                      className={`guest-pass-row ${scanned?.id === g.id ? "scanned-attendance" : ""}`}
+                    >
                       <td>
                         {flat(g.flat_id)}
                         {!g.cancelled && (

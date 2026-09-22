@@ -4,13 +4,17 @@ import { parsePassCode } from "@/lib/pass-code";
 export function AttendanceScanner({
   onScan,
 }: {
-  onScan: (pass: { kind: "resident" | "guest"; code: string }) => void;
+  onScan: (pass: { kind: "resident" | "guest"; code: string }) => {
+    message: string;
+    targetId?: string;
+  };
 }) {
   const video = useRef<HTMLVideoElement>(null),
     controls = useRef<{ stop: () => void } | null>(null),
     generation = useRef(0);
   const [active, setActive] = useState(false),
-    [message, setMessage] = useState("");
+    [message, setMessage] = useState(""),
+    [targetId, setTargetId] = useState<string>();
   const stop = () => {
     generation.current++;
     controls.current?.stop();
@@ -25,13 +29,15 @@ export function AttendanceScanner({
     [],
   );
   const read = (value: string) => {
+    setTargetId(undefined);
     const pass = parsePassCode(value, window.location.origin);
     if (!pass) {
       setMessage("Use a resident or guest pass from this website.");
       return;
     }
-    setMessage("");
-    onScan(pass);
+    const result = onScan(pass);
+    setMessage(result.message);
+    setTargetId(result.targetId);
   };
   return (
     <section className="panel no-print">
@@ -53,7 +59,10 @@ export function AttendanceScanner({
           className="button secondary"
           disabled={active}
           onClick={async () => {
-            setMessage("");
+            setTargetId(undefined);
+            setMessage(
+              "Point the camera at the full QR code and hold steady. Detection will close the camera and show the result here.",
+            );
             setActive(true);
             const run = ++generation.current;
             try {
@@ -95,6 +104,7 @@ export function AttendanceScanner({
         )}
       </div>
       <form
+        className="pass-lookup-form"
         onSubmit={(e) => {
           e.preventDefault();
           stop();
@@ -112,6 +122,19 @@ export function AttendanceScanner({
         </label>
         <button className="button secondary">Find pass</button>
       </form>
+      {targetId && (
+        <button
+          type="button"
+          className="button"
+          onClick={() => {
+            const row = document.getElementById(targetId);
+            row?.scrollIntoView({ behavior: "smooth", block: "center" });
+            row?.focus({ preventScroll: true });
+          }}
+        >
+          Go to check-in
+        </button>
+      )}
       {message && (
         <p className="notice" role="status">
           {message}

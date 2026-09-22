@@ -1914,3 +1914,11 @@ input::-webkit-datetime-edit { min-width: 0; padding: 0; }
   .guest-pass-table td:first-child, .guest-pass-table td:last-child { grid-column: 1 / -1; }
   .guest-pass-table td[data-label]::before { content: attr(data-label); display: block; font-size: .8rem; color: var(--muted); margin-bottom: .25rem; }
 }
+
+.pass-lookup-form { display: flex; flex-wrap: wrap; gap: .75rem; align-items: end; margin: 1rem 0; }
+.pass-lookup-form label { display: grid; gap: .4rem; flex: 1 1 16rem; min-width: 0; margin: 0; }
+.pass-lookup-form input { width: 100%; min-width: 0; }
+.pass-lookup-form .button { margin: 0; flex: 0 0 auto; }
+.qr-camera { width: 100%; max-width: 32rem; max-height: 22rem; object-fit: contain; border-radius: .75rem; background: #111; }
+.scanned-attendance { background: #fff7df; outline: 2px solid #bd902d; outline-offset: -2px; scroll-margin-block: 9rem; }
+.scanned-attendance td { padding: .75rem; }
