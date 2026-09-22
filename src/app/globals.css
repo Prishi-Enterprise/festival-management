@@ -1947,3 +1947,23 @@ input::-webkit-datetime-edit { min-width: 0; padding: 0; }
 .guest-pass-card.scanned-attendance { background: #fff7df; }
 .guest-pass-card .pass-share-actions .button { flex: 1 1 auto; text-align: center; }
 @media print { .guest-pass-carousel { display: block; overflow: visible; } .guest-pass-card { break-inside: avoid; margin-bottom: 1rem; } }
+
+.resident-attendance-table .resident-flat strong { white-space: nowrap; }
+@media (max-width: 760px) {
+  .resident-attendance-scroll { overflow: visible; }
+  .resident-attendance-table, .resident-attendance-table tbody { display: block; width: 100%; min-width: 0; }
+  .resident-attendance-table thead { display: none; }
+  .resident-attendance-table tbody tr { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .85rem; border: 1px solid var(--border); border-radius: .85rem; padding: 1rem; margin-block: 1rem; }
+  .resident-attendance-table td { display: block; border: 0; padding: 0; min-width: 0; overflow-wrap: normal; }
+  .resident-attendance-table .resident-flat, .resident-attendance-table .resident-checkin { grid-column: 1 / -1; }
+  .resident-attendance-table .resident-flat strong { font-size: 1rem; }
+  .resident-attendance-table .resident-flat small { max-width: none; overflow-wrap: normal; margin-top: .35rem; }
+  .resident-attendance-table td[data-label] { background: var(--background, #faf9f5); border-radius: .5rem; padding: .65rem .4rem; font-weight: 700; text-align: center; }
+  .resident-attendance-table td[data-label]::before { content: attr(data-label); display: block; font-size: .75rem; font-weight: 400; margin-bottom: .3rem; }
+  .resident-checkin .operation-inline { min-width: 0; }
+  .resident-checkin .operation-inline fieldset { display: flex; flex-wrap: wrap; align-items: end; gap: .75rem; }
+  .resident-checkin .operation-inline .entry-actions { margin: 0; flex: 1 1 8rem; }
+  .resident-checkin .operation-inline label { margin: 0; width: 100%; }
+  .resident-checkin .operation-inline input { width: 100%; max-width: none; }
+  .resident-checkin .operation-inline button { margin: 0; min-height: 2.75rem; }
+}

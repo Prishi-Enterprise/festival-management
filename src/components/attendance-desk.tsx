@@ -267,8 +267,8 @@ export function AttendanceDesk({
                 }}
               />
             </label>
-            <div className="table-scroll">
-              <table>
+            <div className="table-scroll resident-attendance-scroll">
+              <table className="resident-attendance-table">
                 <thead>
                   <tr>
                     <th>Flat</th>
@@ -288,18 +288,20 @@ export function AttendanceDesk({
                         scanned?.id === a.id ? "scanned-attendance" : undefined
                       }
                     >
-                      <td>
-                        {flat(a.flat_id)}
+                      <td className="resident-flat">
+                        <strong>{flat(a.flat_id)}</strong>
                         <small>
                           {a.confirmed
                             ? "Fixed fee confirmed"
                             : "Awaiting confirmed fixed payment"}
                         </small>
                       </td>
-                      <td>{mealTotal(a)}</td>
-                      <td>{a.attended}</td>
-                      <td>{Math.max(0, mealTotal(a) - a.attended)}</td>
-                      <td>
+                      <td data-label="Eligible">{mealTotal(a)}</td>
+                      <td data-label="Admitted">{a.attended}</td>
+                      <td data-label="Remaining">
+                        {Math.max(0, mealTotal(a) - a.attended)}
+                      </td>
+                      <td className="resident-checkin">
                         {(a.confirmed ||
                           (member.role === "admin" && a.attended > 0)) && (
                           <OperationForm
