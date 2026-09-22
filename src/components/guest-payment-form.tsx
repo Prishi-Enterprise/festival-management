@@ -138,15 +138,17 @@ export function GuestPaymentForm({
               ? "The payee owes this amount until collection is reconciled."
               : "The receipt awaits admin confirmation."}
           </p>
-          <Link
-            className="button"
-            href={`/desk/${d.festival.id}/attendance?service=${serviceId}`}
-          >
-            View guest pass in attendance
-          </Link>
-          <Link className="button secondary" href={`/desk/${d.festival.id}`}>
-            Back to finance
-          </Link>
+          <div className="form-actions guest-save-actions">
+            <Link
+              className="button"
+              href={`/desk/${d.festival.id}/attendance?service=${serviceId}`}
+            >
+              View guest pass in attendance
+            </Link>
+            <Link className="button secondary" href={`/desk/${d.festival.id}`}>
+              Back to finance
+            </Link>
+          </div>
         </section>
       ) : (
         <section className="panel finance-form">

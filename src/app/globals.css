@@ -1984,3 +1984,6 @@ input::-webkit-datetime-edit { min-width: 0; padding: 0; }
 .guest-menu-code { overflow-wrap: anywhere; padding: .6rem; border-top: 1px solid #eee5d5; color: #73717a; font-size: .7rem; }
 @media print { .guest-pass-menu { display: none; } }
 .guest-pass-card:has(.guest-pass-menu[open]) { min-height: 27rem; }
+
+.guest-save-actions .button { margin: 0; text-align: center; white-space: normal; }
+@media (max-width: 540px) { .guest-save-actions { flex-direction: column; align-items: stretch; } }
