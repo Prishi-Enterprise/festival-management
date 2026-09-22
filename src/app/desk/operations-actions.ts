@@ -67,6 +67,13 @@ export async function saveOperation(
           ? "This flat or participant already has a row here. Edit the existing row."
           : "Check counts, dates and required fields. Attended counts cannot exceed confirmed diners; a used pass cannot be cancelled.",
     };
+  // Attendance refreshes its selected meal via the authorized read endpoint.
+  // Avoid rerendering the entire desk after each arrival.
+  if (operation === "resident_checkin" || operation === "guest_checkin") {
+    revalidatePath("/desk/[id]/report", "page");
+    revalidatePath("/desk/[id]/operations", "page");
+    return { ok: true };
+  }
   revalidatePath("/desk", "layout");
   revalidatePath("/admin/festivals", "layout");
   refresh();

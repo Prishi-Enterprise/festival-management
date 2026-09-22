@@ -3,126 +3,153 @@ import { ResidentContactActions } from "./rsvp-contacts";
 import { GuestPassMenu } from "./guest-pass-menu";
 import Link from "next/link";
 import { AttendanceScanner } from "./attendance-scanner";
-import { attendancePage, matchesAttendance } from "@/lib/attendance-list";
-import { useEffect, useState } from "react";
+import {
+  attendanceQuerySchema,
+  type AttendanceData,
+} from "@/lib/attendance-data";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { OperationForm, type Field } from "./operation-form";
-import {
-  mealTotal,
-  expectedDiners,
-  serviceLabel,
-  type OperationsData,
-  type Guest,
-} from "@/lib/operations";
+import { mealTotal, serviceLabel, type Guest } from "@/lib/operations";
 import type { Member } from "@/lib/types";
 export function AttendanceDesk({
-  data: d,
+  data: initial,
   member,
   baseUrl,
 }: {
-  data: OperationsData;
+  data: AttendanceData;
   member: Member;
   baseUrl: string;
 }) {
-  const services = d.services.filter(
-    (s) => s.coverage !== "not_served" || s.guest_available,
-  );
   const params = useSearchParams();
-  const selected = services.some((s) => s.id === params.get("service"))
-    ? params.get("service")!
-    : (services[0]?.id ?? "");
+  const parsedQuery = attendanceQuerySchema.safeParse(
+    Object.fromEntries(params),
+  );
+  const initialQuery = parsedQuery.success ? parsedQuery.data : undefined;
+  const [selected, setSelectedMeal] = useState(
+    initial.selected_service_id ?? "",
+  );
   const setSelected = (id: string) => {
+    setSelectedMeal(id);
     const query = new URLSearchParams(window.location.search);
     query.set("service", id);
     window.history.replaceState(null, "", `?${query}`);
   };
-  const service = services.find((s) => s.id === selected);
-  const [scanned, setScanned] = useState<{
+  const [scan, setScan] = useState<{
     kind: "resident" | "guest";
-    id: string;
-  } | null>(null);
-  useEffect(() => {
-    if (!scanned) return;
-    const row = document.getElementById(
-      `attendance-${scanned.kind}-${scanned.id}`,
-    );
-    row?.scrollIntoView({ behavior: "smooth", block: "center" });
-    row?.focus({ preventScroll: true });
-  }, [scanned]);
-  const [residentSearch, setResidentSearch] = useState("");
-  const [guestSearch, setGuestSearch] = useState("");
-  const [residentPage, setResidentPage] = useState(0);
-  const [guestPage, setGuestPage] = useState(0);
-  const [savedGuest, setSavedGuest] = useState(params.get("guest") ?? "");
+    code: string;
+  } | null>(
+    initialQuery?.code && initialQuery.kind
+      ? { code: initialQuery.code, kind: initialQuery.kind }
+      : null,
+  );
+  const [residentSearch, setResidentSearch] = useState(
+    initialQuery?.resident_search ?? "",
+  );
+  const [guestSearch, setGuestSearch] = useState(
+    initialQuery?.guest_search ?? "",
+  );
+  const [residentPage, setResidentPage] = useState(initial.resident_list.page);
+  const [guestPage, setGuestPage] = useState(initial.guest_list.page);
+  const [savedGuest, setSavedGuest] = useState(initialQuery?.guest ?? "");
   const [notice, setNotice] = useState("");
   const [editing, setEditing] = useState<Guest | "new" | null>(null);
+  const [revision, setRevision] = useState(0);
+  const reload = () => setRevision((v) => v + 1);
+  const query = new URLSearchParams({
+    resident_search: residentSearch,
+    guest_search: guestSearch,
+    resident_page: String(residentPage),
+    guest_page: String(guestPage),
+  });
+  if (selected) query.set("service", selected);
+  if (savedGuest) query.set("guest", savedGuest);
+  if (scan) {
+    query.set("kind", scan.kind);
+    query.set("code", scan.code);
+  }
+  const queryString = query.toString();
+  const requestKey = `${queryString}:${revision}`;
+  const [response, setResponse] = useState({
+    initial,
+    key: requestKey,
+    data: initial,
+    error: "",
+  });
+  const d = response.initial === initial ? response.data : initial;
+  const loading = response.initial !== initial || response.key !== requestKey;
+  const loadedRequest = useRef({ initial, key: requestKey });
+  useEffect(() => {
+    if (
+      loadedRequest.current.initial === initial &&
+      loadedRequest.current.key === requestKey
+    )
+      return;
+    const controller = new AbortController();
+    // Debounce typing and cancel obsolete searches so late responses cannot replace the selected meal.
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(
+          `/desk/${initial.festival.id}/attendance/records?${queryString}`,
+          {
+            signal: controller.signal,
+            cache: "no-store",
+          },
+        );
+        const body = await res.json();
+        if (!res.ok)
+          throw new Error(body.error ?? "Could not load attendance.");
+        if (!controller.signal.aborted) {
+          loadedRequest.current = { initial, key: requestKey };
+          setResponse({ initial, key: requestKey, data: body, error: "" });
+        }
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          loadedRequest.current = { initial, key: requestKey };
+          setResponse((previous) => ({
+            ...previous,
+            initial,
+            key: requestKey,
+            error:
+              error instanceof Error
+                ? error.message
+                : "Could not load attendance.",
+          }));
+        }
+      }
+    }, 250);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [initial, queryString, requestKey]);
+  const services = d.services.filter(
+    (s) => s.coverage !== "not_served" || s.guest_available,
+  );
+  const service = services.find((s) => s.id === selected);
+  const residents = d.attendance;
+  const guests = d.guests;
+  const residentList = { ...d.resident_list, items: residents };
+  const guestList = { ...d.guest_list, items: guests };
+  const found =
+    scan?.kind === "resident"
+      ? d.enrollments.find((e) => e.attendance_code === scan.code)
+      : scan
+        ? guests.find((g) => g.pass_code === scan.code)
+        : undefined;
+  const scanned =
+    !loading && found && scan ? { kind: scan.kind, id: found.id } : null;
+  const scannedId = scanned ? `attendance-${scanned.kind}-${scanned.id}` : "";
+  useEffect(() => {
+    if (!scannedId) return;
+    const row = document.getElementById(scannedId);
+    row?.scrollIntoView({ behavior: "smooth", block: "center" });
+    row?.focus({ preventScroll: true });
+  }, [scannedId]);
   const flat = (id: string) => {
     const f = d.flats.find((f) => f.id === id);
     return f ? `${f.block}–${f.flat_number}` : "";
   };
-  const rows = d.attendance.filter((a) => a.service_id === selected);
-  const guests = d.guests
-    .filter((g) =>
-      g.included_services
-        ? g.included_services.includes(selected)
-        : g.service_id === selected,
-    )
-    .map((g) =>
-      g.package_id
-        ? {
-            ...g,
-            service_id: selected,
-            attended:
-              g.checkins?.find((c) => c.service_id === selected)?.attended ?? 0,
-          }
-        : g,
-    );
-  const residents = d.enrollments.map(
-    (e) =>
-      rows.find((a) => a.id === e.id) ?? {
-        id: e.id,
-        flat_id: e.flat_id,
-        service_id: selected,
-        created_by: "",
-        version: 0,
-        adults: 0,
-        children: 0,
-        under_seven: 0,
-        guest_adults: 0,
-        guest_children: 0,
-        guest_under_seven: 0,
-        confirmed: false,
-        attended: 0,
-        note: "",
-      },
-  );
-  const residentList = attendancePage(
-    residents.filter(
-      (a) =>
-        (!scanned || (scanned.kind === "resident" && scanned.id === a.id)) &&
-        matchesAttendance(
-          residentSearch,
-          flat(a.flat_id),
-          d.enrollments.find((e) => e.id === a.id)?.contact_phone ?? "",
-        ),
-    ),
-    residentPage,
-  );
-  const guestList = attendancePage(
-    guests
-      .filter(
-        (g) =>
-          (!scanned || (scanned.kind === "guest" && scanned.id === g.id)) &&
-          matchesAttendance(guestSearch, flat(g.flat_id), g.pass_code),
-      )
-      .sort(
-        (a, b) => Number(b.id === savedGuest) - Number(a.id === savedGuest),
-      ),
-    guestPage,
-  );
-  const expected = rows
-    .filter((a) => a.confirmed)
-    .reduce((n, a) => n + mealTotal(a), 0);
   const fields: Field[] = [
     {
       name: "flat_id",
@@ -181,7 +208,7 @@ export function AttendanceDesk({
               value={selected}
               onChange={(e) => {
                 setSelected(e.target.value);
-                setScanned(null);
+                setScan(null);
                 setEditing(null);
                 setResidentSearch("");
                 setGuestSearch("");
@@ -198,12 +225,17 @@ export function AttendanceDesk({
             </select>
           </label>
           <p>
-            <strong>{expected} eligible diners</strong> ·{" "}
-            {rows
-              .filter((a) => a.confirmed)
-              .reduce((n, a) => n + expectedDiners(d, a), 0)}{" "}
-            RSVPed · {rows.reduce((n, a) => n + a.attended, 0)} checked in
+            <strong>{d.totals.eligible} eligible diners</strong> ·{" "}
+            {d.totals.rsvped} RSVPed · {d.totals.attended} checked in
           </p>
+          <button
+            type="button"
+            className="button secondary"
+            disabled={loading}
+            onClick={reload}
+          >
+            Refresh attendance
+          </button>
           <p>
             Set the total already admitted for this meal. Remaining quantities
             update after saving. Committee check-in counts can only increase;
@@ -213,46 +245,16 @@ export function AttendanceDesk({
         <AttendanceScanner
           key={selected}
           onScan={(pass) => {
-            const found =
-              pass.kind === "resident"
-                ? d.enrollments.find((e) => e.attendance_code === pass.code)
-                : guests.find((g) => g.pass_code === pass.code);
-            if (
-              !found ||
-              (pass.kind === "resident" &&
-                !residents.some((r) => r.id === found.id))
-            ) {
-              setScanned(null);
-              setNotice(
-                "Pass is not available for this festival and selected meal.",
-              );
-              return {
-                message:
-                  "QR read, but this pass is not available for the selected festival, day and meal. Check the day and meal above, then scan again.",
-              };
-            }
-            setScanned({ kind: pass.kind, id: found.id });
+            setScan(pass);
             setResidentSearch("");
             setGuestSearch("");
             setResidentPage(0);
             setGuestPage(0);
-            const resident =
-              pass.kind === "resident"
-                ? residents.find((r) => r.id === found.id)
-                : undefined;
-            const guest =
-              pass.kind === "guest"
-                ? guests.find((g) => g.id === found.id)
-                : undefined;
-            const message = guest?.cancelled
-              ? `Guest pass for ${flat(found.flat_id)} is cancelled. Check-in is unavailable.`
-              : resident && !resident.confirmed
-                ? `Resident pass for ${flat(found.flat_id)} found. Fixed payment is not confirmed; admission is unavailable.`
-                : `${pass.kind === "guest" ? "Guest" : "Resident"} pass for ${flat(found.flat_id)} found. Review the count and press Save check-in. Scanning alone does not record attendance.`;
-            setNotice(message);
+            setNotice("");
+            reload();
             return {
-              message,
-              targetId: `attendance-${pass.kind}-${found.id}`,
+              message:
+                "QR read. The lookup result appears below; scanning does not record attendance.",
             };
           }}
         />
@@ -261,12 +263,19 @@ export function AttendanceDesk({
             {notice}
           </p>
         )}
-        {scanned && (
+        {scan && !loading && !response.error && (
+          <p className="notice" role="status">
+            {found
+              ? `Pass for ${flat(found.flat_id)} found. Review eligibility and press Save check-in. Scanning alone does not record attendance.`
+              : "Pass is not available for this festival and selected meal."}
+          </p>
+        )}
+        {scan && (
           <button
             type="button"
             className="button secondary"
             onClick={() => {
-              setScanned(null);
+              setScan(null);
               setNotice("");
             }}
           >
@@ -274,256 +283,275 @@ export function AttendanceDesk({
           </button>
         )}
 
-        <section className="panel finance-register">
-          <h2>Residents</h2>
-          <label>
-            Search residents by flat or phone
-            <input
-              type="search"
-              value={residentSearch}
-              placeholder="101, A-101 or phone number"
-              onChange={(e) => {
-                setResidentSearch(e.target.value);
-                setResidentPage(0);
-              }}
-            />
-          </label>
-          <p className="tiny">
-            Swipe or scroll sideways to browse flats. Each page shows up to 10.
+        {loading && <p role="status">Loading attendance…</p>}
+        {response.error && (
+          <p role="alert">
+            {response.error}{" "}
+            <button type="button" onClick={reload}>
+              Try again
+            </button>
           </p>
-          <div
-            className="guest-pass-carousel"
-            key={`${residentList.page}-${selected}`}
-            role="region"
-            aria-label="Resident attendance cards"
-            tabIndex={0}
-          >
-            {residentList.items.map((a) => {
-              const pass = d.enrollments.find((e) => e.id === a.id);
-              return (
+        )}
+        <div aria-busy={loading} className="attendance-results">
+          <section className="panel finance-register">
+            <h2>Residents</h2>
+            <label>
+              Search residents by flat or phone
+              <input
+                maxLength={120}
+                type="search"
+                value={residentSearch}
+                placeholder="101, A-101 or phone number"
+                onChange={(e) => {
+                  setResidentSearch(e.target.value);
+                  setResidentPage(0);
+                }}
+              />
+            </label>
+            <p className="tiny">
+              Swipe or scroll sideways to browse flats. Each page shows up to
+              10.
+            </p>
+            <fieldset
+              disabled={loading || Boolean(response.error)}
+              className="guest-pass-carousel"
+              key={`${residentList.page}-${selected}`}
+              role="region"
+              aria-label="Resident attendance cards"
+              tabIndex={0}
+            >
+              {residentList.items.map((a) => {
+                const pass = d.enrollments.find((e) => e.id === a.id);
+                return (
+                  <article
+                    key={a.id}
+                    id={`attendance-resident-${a.id}`}
+                    tabIndex={-1}
+                    className={`guest-pass-card resident-pass-card ${scanned?.id === a.id ? "scanned-attendance" : ""}`}
+                  >
+                    <div className="guest-pass-heading">
+                      <div className="guest-card-title">
+                        <h3>{flat(a.flat_id)}</h3>
+                        {pass?.attendance_code && (
+                          <GuestPassMenu
+                            kind="resident"
+                            url={`${baseUrl}/resident-pass/${pass.attendance_code}`}
+                            festival={d.festival.name}
+                            flat={flat(a.flat_id)}
+                            code={pass.attendance_code}
+                          >
+                            <ResidentContactActions
+                              enrollment={pass}
+                              admin={member.role === "admin"}
+                              baseUrl={baseUrl}
+                              festival={d.festival.name}
+                            />
+                          </GuestPassMenu>
+                        )}
+                      </div>
+                      <p className="tiny">{service && serviceLabel(service)}</p>
+                      <small>
+                        {pass?.eligible
+                          ? "Fixed fee confirmed"
+                          : "Awaiting confirmed fixed payment"}
+                      </small>
+                    </div>
+                    <div className="guest-pass-stat">
+                      <span>Eligible</span>
+                      {mealTotal(a)}
+                    </div>
+                    <div className="guest-pass-stat">
+                      <span>Admitted</span>
+                      {a.attended}
+                    </div>
+                    <div className="guest-pass-stat">
+                      <span>Remaining</span>
+                      {Math.max(0, mealTotal(a) - a.attended)}
+                    </div>
+                    <p className="resident-card-contact tiny">
+                      {pass?.members.length ?? 0} registered members ·{" "}
+                      {pass?.contact_phone ?? "Contact number needed"}
+                    </p>
+                    <div className="guest-checkin">
+                      {service &&
+                        (a.confirmed ||
+                          (member.role === "admin" && a.attended > 0)) && (
+                          <OperationForm
+                            compact
+                            key={`${a.id}-${a.service_id}-${a.version}`}
+                            operation="resident_checkin"
+                            base={{
+                              id: a.id,
+                              service_id: selected,
+                              version: a.version,
+                              attended: a.attended,
+                            }}
+                            fields={[
+                              {
+                                name: "attended",
+                                label: `Total admitted ${flat(a.flat_id)}`,
+                                type: "number",
+                                max:
+                                  member.role === "admin"
+                                    ? Math.max(mealTotal(a), a.attended)
+                                    : mealTotal(a),
+                                min: member.role === "admin" ? 0 : a.attended,
+                                required: true,
+                              },
+                            ]}
+                            onSaved={reload}
+                            button="Save check-in"
+                          />
+                        )}
+                    </div>
+                  </article>
+                );
+              })}
+            </fieldset>
+            {!residentList.total && (
+              <p>
+                {residents.length
+                  ? "No residents match this flat number."
+                  : "No fixed attendees registered yet."}
+              </p>
+            )}
+            <AttendancePagination
+              list={residentList}
+              onPage={setResidentPage}
+              label="Residents"
+            />
+          </section>
+          <section className="panel finance-register">
+            <h2>Guest passes</h2>
+            <label>
+              Search guest passes by flat number or pass code
+              <input
+                maxLength={120}
+                type="search"
+                value={guestSearch}
+                placeholder="101, A-101 or pass code"
+                onChange={(e) => {
+                  setGuestSearch(e.target.value);
+                  setGuestPage(0);
+                }}
+              />
+            </label>
+            <p>
+              Every new guest pass is created with a guest entry. Guests can
+              check in before admin confirmation.
+            </p>
+            <Link
+              className="button"
+              href={`/desk/${d.festival.id}/guest-payments`}
+            >
+              Record guest entry & create pass
+            </Link>
+            <p className="tiny">
+              Swipe or scroll sideways to browse passes. Each page shows up to
+              10.
+            </p>
+            <fieldset
+              disabled={loading || Boolean(response.error)}
+              className="guest-pass-carousel"
+              key={`${guestList.page}-${selected}`}
+              role="region"
+              aria-label="Guest pass cards"
+              tabIndex={0}
+            >
+              {guestList.items.map((g) => (
                 <article
-                  key={a.id}
-                  id={`attendance-resident-${a.id}`}
+                  key={g.id}
+                  id={`attendance-guest-${g.id}`}
                   tabIndex={-1}
-                  className={`guest-pass-card resident-pass-card ${scanned?.id === a.id ? "scanned-attendance" : ""}`}
+                  className={`guest-pass-card ${scanned?.id === g.id ? "scanned-attendance" : ""}`}
                 >
                   <div className="guest-pass-heading">
                     <div className="guest-card-title">
-                      <h3>{flat(a.flat_id)}</h3>
-                      {pass?.attendance_code && (
-                        <GuestPassMenu
-                          kind="resident"
-                          url={`${baseUrl}/resident-pass/${pass.attendance_code}`}
-                          festival={d.festival.name}
-                          flat={flat(a.flat_id)}
-                          code={pass.attendance_code}
-                        >
-                          <ResidentContactActions
-                            enrollment={pass}
-                            admin={member.role === "admin"}
-                            baseUrl={baseUrl}
-                            festival={d.festival.name}
-                          />
-                        </GuestPassMenu>
-                      )}
+                      <h3>{flat(g.flat_id)}</h3>
+                      <GuestPassMenu
+                        url={`${baseUrl}/guest-pass/${g.pass_code}`}
+                        festival={d.festival.name}
+                        flat={flat(g.flat_id)}
+                        code={g.pass_code}
+                        paymentUrl={
+                          !g.cancelled
+                            ? `/desk/${d.festival.id}/guest-payments?guest=${g.id}`
+                            : undefined
+                        }
+                        onEdit={
+                          g.created_by === member.user_id
+                            ? () => setEditing(g)
+                            : undefined
+                        }
+                      />
                     </div>
                     <p className="tiny">{service && serviceLabel(service)}</p>
                     <small>
-                      {pass?.eligible
-                        ? "Fixed fee confirmed"
-                        : "Awaiting confirmed fixed payment"}
+                      {g.payment_status === "confirmed"
+                        ? "Receipt confirmed"
+                        : g.payment_status === "pending"
+                          ? "Receipt awaiting confirmation"
+                          : g.payment_status === "payee_due"
+                            ? "Payee owes guest fee"
+                            : "No active linked receipt"}
                     </small>
                   </div>
                   <div className="guest-pass-stat">
-                    <span>Eligible</span>
-                    {mealTotal(a)}
+                    <span>Registered</span>
+                    {g.adults + g.children + g.under_seven}
+                    {g.cancelled ? " · Cancelled" : ""}
                   </div>
                   <div className="guest-pass-stat">
-                    <span>Admitted</span>
-                    {a.attended}
+                    <span>Admitted / remaining</span>
+                    {g.attended} /{" "}
+                    {g.cancelled
+                      ? 0
+                      : g.adults + g.children + g.under_seven - g.attended}
                   </div>
-                  <div className="guest-pass-stat">
-                    <span>Remaining</span>
-                    {Math.max(0, mealTotal(a) - a.attended)}
-                  </div>
-                  <p className="resident-card-contact tiny">
-                    {pass?.members.length ?? 0} registered members ·{" "}
-                    {pass?.contact_phone ?? "Contact number needed"}
-                  </p>
                   <div className="guest-checkin">
-                    {service &&
-                      (a.confirmed ||
-                        (member.role === "admin" && a.attended > 0)) && (
-                        <OperationForm
-                          compact
-                          key={`${a.id}-${a.service_id}-${a.version}`}
-                          operation="resident_checkin"
-                          base={{
-                            id: a.id,
-                            service_id: selected,
-                            version: a.version,
-                            attended: a.attended,
-                          }}
-                          fields={[
-                            {
-                              name: "attended",
-                              label: `Total admitted ${flat(a.flat_id)}`,
-                              type: "number",
-                              max:
-                                member.role === "admin"
-                                  ? Math.max(mealTotal(a), a.attended)
-                                  : mealTotal(a),
-                              min: member.role === "admin" ? 0 : a.attended,
-                              required: true,
-                            },
-                          ]}
-                          button="Save check-in"
-                        />
-                      )}
+                    {!g.cancelled && (
+                      <OperationForm
+                        compact
+                        key={`${g.id}-${g.version}`}
+                        operation="guest_checkin"
+                        base={{
+                          id: g.id,
+                          service_id: selected,
+                          version: g.version,
+                          attended: g.attended,
+                        }}
+                        fields={[
+                          {
+                            name: "attended",
+                            label: "Total guests admitted",
+                            type: "number",
+                            max: g.adults + g.children + g.under_seven,
+                            min: member.role === "admin" ? 0 : g.attended,
+                            required: true,
+                          },
+                        ]}
+                        onSaved={reload}
+                        button="Save check-in"
+                      />
+                    )}
                   </div>
                 </article>
-              );
-            })}
-          </div>
-          {!residentList.total && (
-            <p>
-              {residents.length
-                ? "No residents match this flat number."
-                : "No fixed attendees registered yet."}
-            </p>
-          )}
-          <AttendancePagination
-            list={residentList}
-            onPage={setResidentPage}
-            label="Residents"
-          />
-        </section>
-        <section className="panel finance-register">
-          <h2>Guest passes</h2>
-          <label>
-            Search guest passes by flat number or pass code
-            <input
-              type="search"
-              value={guestSearch}
-              placeholder="101, A-101 or pass code"
-              onChange={(e) => {
-                setGuestSearch(e.target.value);
-                setGuestPage(0);
-              }}
+              ))}
+            </fieldset>
+            {!guestList.total && (
+              <p>
+                {guests.length
+                  ? "No guest passes match this search."
+                  : "No guests registered for this meal yet."}
+              </p>
+            )}
+            <AttendancePagination
+              list={guestList}
+              onPage={setGuestPage}
+              label="Guest passes"
             />
-          </label>
-          <p>
-            Every new guest pass is created with a guest entry. Guests can check
-            in before admin confirmation.
-          </p>
-          <Link
-            className="button"
-            href={`/desk/${d.festival.id}/guest-payments`}
-          >
-            Record guest entry & create pass
-          </Link>
-          <p className="tiny">
-            Swipe or scroll sideways to browse passes. Each page shows up to 10.
-          </p>
-          <div
-            className="guest-pass-carousel"
-            key={`${guestList.page}-${selected}`}
-            role="region"
-            aria-label="Guest pass cards"
-            tabIndex={0}
-          >
-            {guestList.items.map((g) => (
-              <article
-                key={g.id}
-                id={`attendance-guest-${g.id}`}
-                tabIndex={-1}
-                className={`guest-pass-card ${scanned?.id === g.id ? "scanned-attendance" : ""}`}
-              >
-                <div className="guest-pass-heading">
-                  <div className="guest-card-title">
-                    <h3>{flat(g.flat_id)}</h3>
-                    <GuestPassMenu
-                      url={`${baseUrl}/guest-pass/${g.pass_code}`}
-                      festival={d.festival.name}
-                      flat={flat(g.flat_id)}
-                      code={g.pass_code}
-                      paymentUrl={
-                        !g.cancelled
-                          ? `/desk/${d.festival.id}/guest-payments?guest=${g.id}`
-                          : undefined
-                      }
-                      onEdit={
-                        g.created_by === member.user_id
-                          ? () => setEditing(g)
-                          : undefined
-                      }
-                    />
-                  </div>
-                  <p className="tiny">{service && serviceLabel(service)}</p>
-                  <small>
-                    {g.payment_status === "confirmed"
-                      ? "Receipt confirmed"
-                      : g.payment_status === "pending"
-                        ? "Receipt awaiting confirmation"
-                        : g.payment_status === "payee_due"
-                          ? "Payee owes guest fee"
-                          : "No active linked receipt"}
-                  </small>
-                </div>
-                <div className="guest-pass-stat">
-                  <span>Registered</span>
-                  {g.adults + g.children + g.under_seven}
-                  {g.cancelled ? " · Cancelled" : ""}
-                </div>
-                <div className="guest-pass-stat">
-                  <span>Admitted / remaining</span>
-                  {g.attended} /{" "}
-                  {g.cancelled
-                    ? 0
-                    : g.adults + g.children + g.under_seven - g.attended}
-                </div>
-                <div className="guest-checkin">
-                  {!g.cancelled && (
-                    <OperationForm
-                      compact
-                      key={`${g.id}-${g.version}`}
-                      operation="guest_checkin"
-                      base={{
-                        id: g.id,
-                        service_id: selected,
-                        version: g.version,
-                        attended: g.attended,
-                      }}
-                      fields={[
-                        {
-                          name: "attended",
-                          label: "Total guests admitted",
-                          type: "number",
-                          max: g.adults + g.children + g.under_seven,
-                          min: member.role === "admin" ? 0 : g.attended,
-                          required: true,
-                        },
-                      ]}
-                      button="Save check-in"
-                    />
-                  )}
-                </div>
-              </article>
-            ))}
-          </div>
-          {!guestList.total && (
-            <p>
-              {guests.length
-                ? "No guest passes match this search."
-                : "No guests registered for this meal yet."}
-            </p>
-          )}
-          <AttendancePagination
-            list={guestList}
-            onPage={setGuestPage}
-            label="Guest passes"
-          />
-        </section>
+          </section>
+        </div>
         {editing && (
           <section className="panel finance-form">
             <OperationForm
@@ -550,6 +578,7 @@ export function AttendanceDesk({
                   "Guest pass saved. The updated pass appears first in the list.",
                 );
                 setEditing(null);
+                reload();
               }}
             />
             <button className="text-button" onClick={() => setEditing(null)}>
