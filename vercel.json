@@ -4,7 +4,7 @@
   "git": {
     "deploymentEnabled": {
       "main": true,
-      "codex/launch-candidate": true,
+      "develop": true,
       "codex/*": false
     }
   }
