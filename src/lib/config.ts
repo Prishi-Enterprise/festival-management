@@ -12,14 +12,20 @@ export function publicConfig() {
   return { url, key };
 }
 export function appUrl() {
+  const canonicalDevUrl =
+    process.env.VERCEL_ENV === "preview" &&
+    process.env.VERCEL_GIT_COMMIT_REF === "develop"
+      ? process.env.APP_URL
+      : undefined;
   const previewHost =
     process.env.VERCEL_ENV === "preview"
       ? process.env.VERCEL_BRANCH_URL || process.env.VERCEL_URL
       : undefined;
   const url = new URL(
-    previewHost
-      ? `https://${previewHost}`
-      : process.env.APP_URL || "http://localhost:3000",
+    canonicalDevUrl ||
+      (previewHost
+        ? `https://${previewHost}`
+        : process.env.APP_URL || "http://localhost:3000"),
   );
   if (
     url.protocol !== "https:" &&
