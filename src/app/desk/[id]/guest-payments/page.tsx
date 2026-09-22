@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { z } from "zod";
 import { requireMember } from "@/lib/auth";
+import { GuestRegistrationCutoff } from "@/components/guest-registration-cutoff";
 import { GuestPaymentForm } from "@/components/guest-payment-form";
 import type { GuestDue, OperationsData } from "@/lib/operations";
 import type { Account, Entry, Vendor } from "@/lib/finance";
@@ -58,16 +59,25 @@ export default async function GuestPayments({
   )
     notFound();
   return (
-    <GuestPaymentForm
-      key={entry ?? due ?? guest ?? "new"}
-      vendors={vendors.data as Vendor[]}
-      dues={dues.data as GuestDue[]}
-      dueEntry={dueEntry}
-      userId={member.user_id}
-      data={data.data as OperationsData}
-      accounts={accounts.data as Account[]}
-      entry={receipt.data as Entry | null}
-      initialGuest={initialGuest}
-    />
+    <>
+      <GuestPaymentForm
+        key={entry ?? due ?? guest ?? "new"}
+        vendors={vendors.data as Vendor[]}
+        dues={dues.data as GuestDue[]}
+        dueEntry={dueEntry}
+        userId={member.user_id}
+        data={data.data as OperationsData}
+        accounts={accounts.data as Account[]}
+        entry={receipt.data as Entry | null}
+        initialGuest={initialGuest}
+      />
+      {member.role === "admin" && (
+        <GuestRegistrationCutoff
+          services={(data.data as OperationsData).services.filter(
+            (service) => service.coverage !== "not_served",
+          )}
+        />
+      )}
+    </>
   );
 }

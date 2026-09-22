@@ -120,7 +120,7 @@ export function GuestPaymentForm({
   ];
   return (
     <>
-      <h1>Guest meal payment & pass</h1>
+      <h1>Guest entries</h1>
       <p>
         Record cash/online received or a guest fee owed by a payee. Saving
         creates the pass immediately; guests may check in before admin

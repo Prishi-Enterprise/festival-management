@@ -557,34 +557,6 @@ export function AttendanceDesk({
             </button>
           </section>
         )}
-        {member.role === "admin" && service && (
-          <section className="panel finance-form">
-            <OperationForm
-              key={service.id + service.version}
-              title="Guest registration cutoff"
-              operation="meal_access"
-              base={{
-                id: service.id,
-                version: service.version,
-                locked: service.attendance_locked,
-                cutoff: service.booking_cutoff,
-              }}
-              fields={[
-                {
-                  name: "locked",
-                  label: "Close guest registration",
-                  type: "checkbox",
-                },
-                {
-                  name: "cutoff",
-                  label: "Booking cutoff (India time)",
-                  type: "cutoff",
-                },
-                { name: "reason", label: "Reason", max: 300, required: true },
-              ]}
-            />
-          </section>
-        )}
       </>
     </>
   );
