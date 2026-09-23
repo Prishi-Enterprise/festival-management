@@ -1,0 +1,3 @@
+
+# Local benchmark fixtures and raw results are not deployment assets.
+benchmarks/
