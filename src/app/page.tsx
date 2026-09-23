@@ -46,7 +46,9 @@ export default function Home() {
         </div>
       </main>
       <footer>
-        <span>FESTIVALS BY PRISHI</span>
+        <a href="https://prishi.in" className="prishi-home-link">
+          A product by Prishi <span aria-hidden="true">↗</span>
+        </a>
         <span lang="gu">સાથે મળીને, દરેક ઉજવણી.</span>
         <span>festivals.prishi.in</span>
       </footer>
