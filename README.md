@@ -7,6 +7,7 @@ Committee application for festival collections, money custody, expenses, meals, 
 Target stack: Next.js with TypeScript and Supabase (Postgres, Auth, private Storage). Repository: public `Prishi-Enterprise/festival-management`, independently versioned under the PrishiAI workspace.
 
 - [Local development guide](docs/DEVELOPMENT.md): start local Supabase and Next.js, configure Google sign-in, and run checks.
+- [Gitflow and hosting](docs/HOSTING.md#required-gitflow-policy): all changes go through `develop`, then a release PR to `main`; no direct commits or pushes to `main`.
 - [Product and delivery plan](docs/PLAN.md): scope, confirmed contribution rules, workflows, reports, milestones, local testing, and hosting setup.
 - [Technical implementation document](docs/IMPLEMENTATION.md): schema, accounting rules, permissions, transaction design, migration, tests, and deployment runbook.
 - [Workbook analysis](docs/WORKBOOK_ANALYSIS.md): findings from all 12 sheets and reconciliation issues to resolve before importing historical accounts.
